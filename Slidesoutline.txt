@@ -1,0 +1,53 @@
+Slides outline
+WeGo Public Transit Performance Analysis
+1
+WeGo Public Transit Performance Analysis
+Comprehensive analysis of on-time performance and headway deviation for WeGo Public Transit buses from August to September 2023, examining 338,861 records across 341 operators and 8 routes.
+
+2
+Overall Performance Gauge
+System-wide on-time performance at 79.69% with gauge visualization showing performance against targets. Late arrivals (17.42%) represent primary challenge requiring targeted interventions.
+
+3
+Temporal Performance Heatmap
+Heatmap showing performance variation across days of week and hours of day. Reveals temporal patterns with Sundays and early mornings performing best, Fridays and late nights showing challenges.
+
+4
+Operator Performance Treemap
+Treemap visualization of 341 operators sized by trip volume and colored by on-time percentage. Reveals performance distribution and identifies high-volume operators requiring attention.
+
+5
+Performance Trend Analysis
+Area chart showing cumulative performance distribution over time. Visualizes the stacked relationship between on-time, early, and late departures across the analysis period.
+
+6
+Performance Flow Analysis
+Sankey diagram showing flow from routes to performance outcomes. Visualizes how different routes contribute to overall on-time, early, and late performance metrics.
+
+7
+Route Performance Bubble Chart
+Bubble chart with routes sized by trip volume, positioned by on-time percentage and headway deviation. Shows relationship between route characteristics and performance.
+
+8
+Operator Performance Distribution
+Violin plot showing distribution of operator on-time performance. Reveals performance clustering and identifies outliers in the operator population.
+
+9
+Multi-Dimensional Performance Analysis
+Scatter plot matrix showing relationships between adherence, headway deviation, and on-time percentage. Reveals correlations and patterns in performance metrics.
+
+10
+Hierarchical Performance Breakdown
+Sunburst chart showing hierarchical breakdown of performance by route, direction, and location. Enables drill-down analysis of performance factors.
+
+11
+Route Performance Radar
+Radar chart comparing key performance metrics across all 8 routes. Shows relative strengths and weaknesses of each route at a glance.
+
+12
+Performance Waterfall Analysis
+Waterfall chart showing cumulative impact of different factors on overall performance. Visualizes contribution of each performance category to final metrics.
+
+13
+Key Findings & Recommendations
+Summary of key insights from multi-dimensional analysis. Actionable recommendations for targeted improvements based on identified patterns and outliers.
