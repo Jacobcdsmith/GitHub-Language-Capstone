@@ -1,3 +1,14 @@
+/**
+ * @deprecated This file is not actively used by the application.
+ * Please use src/data/analysisData.ts instead for all data needs.
+ * This file is maintained for backward compatibility and reference only.
+ * 
+ * Key differences from analysisData.ts:
+ * - Different popularity score normalization (0-30 vs 0-100)
+ * - Missing fields: avgForks, avgCommits, enterpriseReadiness, growthSignal
+ * - Additional fields: totalStars, totalForks, rank
+ */
+
 export interface LanguageData {
   name: string;
   icon: string;

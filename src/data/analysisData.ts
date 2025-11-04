@@ -1,4 +1,49 @@
-export const languageData = [
+// TypeScript interfaces for data structures
+export interface LanguageInfo {
+  name: string;
+  overallScore: number;
+  popularityScore: number;
+  activityScore: number;
+  healthScore: number;
+  avgStars: number;
+  avgForks: number;
+  avgContributors: number;
+  avgCommits: number;
+  enterpriseReadiness: number;
+  growthSignal: number;
+  color: string;
+  icon: string;
+}
+
+export interface RepositoryInfo {
+  name: string;
+  language: string;
+  stars: number;
+  forks: number;
+  contributors: number;
+  growth: number;
+}
+
+export interface CorrelationStats {
+  activityVsOverall: { r: number; rSquared: number };
+  popularityVsOverall: { r: number; rSquared: number };
+  healthVsOverall: { r: number; rSquared: number };
+}
+
+export interface SegmentInfo {
+  segment: string;
+  languages: string[];
+  avgScore: number;
+  repos: number;
+}
+
+export interface HealthIndicator {
+  indicator: string;
+  impact: number;
+  description: string;
+}
+
+export const languageData: LanguageInfo[] = [
   {
     name: "Rust",
     overallScore: 49.40,
@@ -181,7 +226,7 @@ export const languageData = [
   }
 ];
 
-export const topRepositories = [
+export const topRepositories: RepositoryInfo[] = [
   { name: "microsoft/vscode", language: "TypeScript", stars: 163000, forks: 28900, contributors: 1900, growth: 0.82 },
   { name: "rust-lang/rust", language: "Rust", stars: 97000, forks: 12500, contributors: 3200, growth: 0.91 },
   { name: "golang/go", language: "Go", stars: 123000, forks: 17600, contributors: 2100, growth: 0.67 },
@@ -194,13 +239,13 @@ export const topRepositories = [
   { name: "torvalds/linux", language: "C++", stars: 179000, forks: 53200, contributors: 27000, growth: 0.41 }
 ];
 
-export const correlationData = {
+export const correlationData: CorrelationStats = {
   activityVsOverall: { r: 0.85, rSquared: 0.72 },
   popularityVsOverall: { r: 0.57, rSquared: 0.33 },
   healthVsOverall: { r: 0.68, rSquared: 0.46 }
 };
 
-export const segmentData = [
+export const segmentData: SegmentInfo[] = [
   { segment: "High Performance", languages: ["Rust", "C++", "Go"], avgScore: 46.81, repos: 450 },
   { segment: "Web Development", languages: ["TypeScript", "JavaScript"], avgScore: 45.82, repos: 520 },
   { segment: "Enterprise", languages: ["Java", "C#"], avgScore: 39.12, repos: 380 },
@@ -208,7 +253,7 @@ export const segmentData = [
   { segment: "Mobile", languages: ["Swift", "Kotlin"], avgScore: 37.96, repos: 240 }
 ];
 
-export const healthIndicators = [
+export const healthIndicators: HealthIndicator[] = [
   { indicator: "License", impact: 11.88, description: "Presence of open source license" },
   { indicator: "Contributing Guidelines", impact: 12.70, description: "CONTRIBUTING.md file present" },
   { indicator: "Code of Conduct", impact: 12.70, description: "CODE_OF_CONDUCT.md file present" },
