@@ -48,6 +48,7 @@ This project is a data analysis and visualization platform for GitHub language s
 *   `02_language_comparison.ipynb`: Language comparison and ranking analysis
 *   `03_correlation_analysis.ipynb`: Correlation and relationship analysis
 *   `04_advanced_visualizations.ipynb`: Advanced and interactive visualizations
+*   `05_calculated_fields_and_derived_tables.ipynb`: Placeholder (currently empty)
 *   `06_calculation_documentation.ipynb`: Documentation of metrics and calculations
 *   `repositories_enriched.csv`: Primary dataset with all repository data
 *   `language_comparison_summary.csv`: Generated summary for frontend
@@ -110,6 +111,9 @@ Run notebooks sequentially in numerical order:
 3. `02_language_comparison.ipynb` (language rankings)
 4. `03_correlation_analysis.ipynb` (relationships)
 5. `04_advanced_visualizations.ipynb` (publication visuals)
+6. `06_calculation_documentation.ipynb` (metrics documentation)
+
+Note: `05_calculated_fields_and_derived_tables.ipynb` is currently a placeholder.
 
 ## Developer Workflow Guidelines
 
