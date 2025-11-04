@@ -1,4 +1,25 @@
+/**
+ * @fileoverview Primary data source for GitHub Language Analytics Dashboard
+ * 
+ * This file contains all static data used throughout the application, including
+ * language statistics, repository information, correlation data, and health indicators.
+ * 
+ * @remarks
+ * Data is derived from Jupyter notebook analysis of 1,200 GitHub repositories
+ * across 12 programming languages. Scores are pre-calculated and normalized.
+ * 
+ * @see {@link ./README.md} for detailed documentation on data structures and update process
+ * @see {@link ../../NOTEBOOK_SUMMARY.md} for analysis methodology
+ * 
+ * Last Updated: November 2025
+ * Data Coverage: 1,200 repositories (2013-2025)
+ */
+
 // TypeScript interfaces for data structures
+
+/**
+ * Language statistics and metrics
+ */
 export interface LanguageInfo {
   name: string;
   overallScore: number;

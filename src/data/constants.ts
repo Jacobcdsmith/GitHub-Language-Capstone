@@ -42,7 +42,14 @@ export const DISPLAY_LIMITS = {
 
 /**
  * Score weights for overall calculation
- * Note: These are documented values - actual scores are pre-calculated in data
+ * 
+ * @remarks
+ * These values are for REFERENCE ONLY and document the methodology
+ * used in the Jupyter notebooks to calculate the overall scores.
+ * The actual overall scores in the data are pre-calculated and
+ * these constants are NOT used in runtime calculations.
+ * 
+ * Overall Score = (Popularity × 0.4) + (Activity × 0.35) + (Health × 0.25)
  */
 export const SCORE_WEIGHTS = {
   POPULARITY: 0.4,
