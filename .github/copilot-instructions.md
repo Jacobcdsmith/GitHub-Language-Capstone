@@ -145,7 +145,7 @@ Note: `05_calculated_fields_and_derived_tables.ipynb` is currently a placeholder
 ### Working with Data
 
 1. **Data Files:**
-   - Primary data: `repositories_enriched.csv` (832KB, 1200+ repositories)
+   - Primary data: `repositories_enriched.csv` (813KB, 1200+ repositories)
    - Generated summaries should be lightweight for web delivery
    - Place new CSV exports in root directory
    - Update `src/data/analysisData.ts` when adding new visualizations
@@ -253,7 +253,7 @@ Note: `05_calculated_fields_and_derived_tables.ipynb` is currently a placeholder
 ### Build Configuration
 - Build command: `npm run build`
 - Publish directory: `dist`
-- Node version: 20.x (specified in deployment configs)
+- Node version: 18 (specified in netlify.toml)
 
 ## Getting Help
 
