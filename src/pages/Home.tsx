@@ -13,7 +13,6 @@ export default function Home() {
             <h1 className="text-6xl font-bold text-[var(--text-primary)]">
               GitHub Language Analytics
             </h1>
-            <ThemeToggle />
           </div>
           <p className="text-2xl text-[var(--text-secondary)] mb-8 max-w-3xl mx-auto">
             Comprehensive analysis of 1,200 repositories across 12 programming languages
@@ -82,7 +81,7 @@ export default function Home() {
               </h3>
             </div>
             <p className="text-[var(--text-primary)]">
-              8 interactive 3D charts: scatter plots, sunburst, treemap, network graphs, and more
+              6 interactive visualizations: enhanced 3D scatter, sunburst, treemap, network graphs, parallel coordinates, and animation
             </p>
           </div>
 

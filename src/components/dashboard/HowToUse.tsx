@@ -96,6 +96,24 @@ export default function HowToUse() {
               <div>Formula: (Popularity + Activity + Health) / 3</div>
             </div>
           </div>
+
+          <div className="border-l-4 border-[#ff6b6b] pl-4">
+            <h4 className="font-bold text-white mb-2">Enterprise Readiness (0-100%)</h4>
+            <p className="text-sm text-[#c9d1d9] mb-2">
+              Measures governance maturity and compliance readiness across four critical dimensions.
+            </p>
+            <div className="bg-[#0d1117] p-3 rounded text-xs font-mono text-[#8b949e]">
+              <div className="mb-1">Formula: Compliance Score × 100</div>
+              <div className="mb-2">Compliance Score = Average of:</div>
+              <div>• Has License (0 or 1)</div>
+              <div>• Has Contributing Guidelines (0 or 1)</div>
+              <div>• Has Code of Conduct (0 or 1)</div>
+              <div>• Has Security Policy (0 or 1)</div>
+              <div className="mt-2 pt-2 border-t border-[#21262d] text-[#c9d1d9]">
+                Example: TypeScript with 3/4 elements = 0.75 × 100 = 75%
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

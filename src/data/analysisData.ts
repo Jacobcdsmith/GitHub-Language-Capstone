@@ -9,7 +9,7 @@ export const languageData = [
     avgForks: 3847,
     avgContributors: 258,
     avgCommits: 2891,
-    enterpriseReadiness: 33,
+    enterpriseReadiness: 75,
     growthSignal: 0.62,
     color: "#CE422B",
     icon: "🦀"
@@ -24,7 +24,7 @@ export const languageData = [
     avgForks: 7234,
     avgContributors: 311,
     avgCommits: 3156,
-    enterpriseReadiness: 40,
+    enterpriseReadiness: 79,
     growthSignal: 0.57,
     color: "#3178C6",
     icon: "📘"
@@ -39,7 +39,7 @@ export const languageData = [
     avgForks: 4523,
     avgContributors: 249,
     avgCommits: 2634,
-    enterpriseReadiness: 35,
+    enterpriseReadiness: 74,
     growthSignal: 0.54,
     color: "#00ADD8",
     icon: "🐹"
@@ -54,7 +54,7 @@ export const languageData = [
     avgForks: 4012,
     avgContributors: 222,
     avgCommits: 2401,
-    enterpriseReadiness: 28,
+    enterpriseReadiness: 74,
     growthSignal: 0.41,
     color: "#00599C",
     icon: "⚙️"
@@ -69,7 +69,7 @@ export const languageData = [
     avgForks: 8234,
     avgContributors: 227,
     avgCommits: 2289,
-    enterpriseReadiness: 32,
+    enterpriseReadiness: 67,
     growthSignal: 0.48,
     color: "#3776AB",
     icon: "🐍"
@@ -84,7 +84,7 @@ export const languageData = [
     avgForks: 6123,
     avgContributors: 241,
     avgCommits: 2156,
-    enterpriseReadiness: 30,
+    enterpriseReadiness: 75,
     growthSignal: 0.45,
     color: "#F7DF1E",
     icon: "📜"
@@ -99,7 +99,7 @@ export const languageData = [
     avgForks: 1823,
     avgContributors: 206,
     avgCommits: 1845,
-    enterpriseReadiness: 25,
+    enterpriseReadiness: 72,
     growthSignal: 0.38,
     color: "#CC342D",
     icon: "💎"
@@ -114,7 +114,7 @@ export const languageData = [
     avgForks: 3912,
     avgContributors: 178,
     avgCommits: 2034,
-    enterpriseReadiness: 38,
+    enterpriseReadiness: 64,
     growthSignal: 0.35,
     color: "#007396",
     icon: "☕"
@@ -129,7 +129,7 @@ export const languageData = [
     avgForks: 1534,
     avgContributors: 112,
     avgCommits: 1623,
-    enterpriseReadiness: 27,
+    enterpriseReadiness: 67,
     growthSignal: 0.42,
     color: "#7F52FF",
     icon: "🅺"
@@ -144,7 +144,7 @@ export const languageData = [
     avgForks: 1712,
     avgContributors: 182,
     avgCommits: 1789,
-    enterpriseReadiness: 22,
+    enterpriseReadiness: 64,
     growthSignal: 0.31,
     color: "#777BB4",
     icon: "🐘"
@@ -159,7 +159,7 @@ export const languageData = [
     avgForks: 1623,
     avgContributors: 98,
     avgCommits: 1534,
-    enterpriseReadiness: 24,
+    enterpriseReadiness: 69,
     growthSignal: 0.36,
     color: "#FA7343",
     icon: "🦅"
@@ -174,7 +174,7 @@ export const languageData = [
     avgForks: 2012,
     avgContributors: 149,
     avgCommits: 1923,
-    enterpriseReadiness: 36,
+    enterpriseReadiness: 67,
     growthSignal: 0.33,
     color: "#239120",
     icon: "#️⃣"

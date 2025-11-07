@@ -10,13 +10,6 @@ const visualizations = [
     color: "#58a6ff"
   },
   {
-    id: "sunburst",
-    title: "Language Hierarchy Sunburst",
-    description: "Hierarchical visualization showing language segments and their relationships",
-    file: "language_hierarchy_sunburst.html",
-    color: "#3fb950"
-  },
-  {
     id: "parallel",
     title: "Parallel Coordinates - Top 100",
     description: "Multi-dimensional view of top 100 repositories across all metrics",
@@ -45,32 +38,11 @@ const visualizations = [
     color: "#ff6b6b"
   },
   {
-    id: "surface",
-    title: "3D Surface Plot",
-    description: "Surface visualization of language metrics landscape",
-    file: "language_surface_plot.html",
-    color: "#00d4aa"
-  },
-  {
-    id: "basic_3d",
-    title: "Basic 3D Language Analysis",
-    description: "Clean 3D scatter plot for fundamental dimensional analysis",
-    file: "3d_language_analysis.html",
-    color: "#a87ce6"
-  },
-  {
-    id: "time_layers",
-    title: "Time-Stratified Layers",
-    description: "Repository success distribution across creation years (2013-2025)",
-    file: "time_stratified_layers.html",
-    color: "#4ECDC4"
-  },
-  {
-    id: "recency_timeline",
-    title: "Recency & Activity Timeline",
-    description: "Repository freshness vs current activity with age context",
-    file: "push_recency_activity_timeline.html",
-    color: "#FF6B9D"
+    id: "sunburst",
+    title: "Language Hierarchy Sunburst",
+    description: "Hierarchy of languages grouped by ecosystem classification",
+    file: "language_hierarchy_sunburst.html",
+    color: "#4ecdc4"
   }
 ];
 
@@ -81,7 +53,7 @@ export default function Visualizations3D() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-white mb-2">3D Interactive Visualizations</h2>
+        <h2 className="text-3xl font-bold text-white mb-2">Interactive Visualizations</h2>
         <p className="text-[#8b949e]">
           Explore multi-dimensional data with interactive 3D charts and advanced visualizations
         </p>
@@ -95,8 +67,8 @@ export default function Visualizations3D() {
             onClick={() => setSelectedViz(viz)}
             className={`p-4 rounded-lg transition-all ${
               selectedViz.id === viz.id
-                ? "bg-[#161b22] border-2 scale-105"
-                : "bg-[#161b22] border border-[#21262d] hover:border-[#30363d]"
+                ? "bg-black border-2 scale-105"
+                : "bg-black border border-[#21262d] hover:border-[#30363d]"
             }`}
             style={{
               borderColor: selectedViz.id === viz.id ? viz.color : undefined
@@ -107,14 +79,14 @@ export default function Visualizations3D() {
               style={{ backgroundColor: viz.color }}
             />
             <div className="text-sm font-semibold text-white text-center">
-              {viz.title.split(' ').slice(0, 2).join(' ')}
+              {viz.title}
             </div>
           </button>
         ))}
       </div>
 
       {/* Main Visualization Display */}
-      <div className="bg-[#161b22] border border-[#21262d] rounded-lg overflow-hidden">
+      <div className="bg-black border border-[#21262d] rounded-lg overflow-hidden">
         <div className="p-4 border-b border-[#21262d] flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold text-white">{selectedViz.title}</h3>
@@ -132,7 +104,7 @@ export default function Visualizations3D() {
           </button>
         </div>
         <div
-          className={`bg-white ${
+          className={`bg-black ${
             isFullscreen ? "h-[calc(100vh-250px)]" : "h-[600px]"
           }`}
         >
@@ -140,13 +112,14 @@ export default function Visualizations3D() {
             src={`/visualizations/${selectedViz.file}`}
             className="w-full h-full border-none"
             title={selectedViz.title}
+            style={{ backgroundColor: "#000" }}
           />
         </div>
       </div>
 
       {/* Visualization Grid - Quick Preview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-[#161b22] border border-[#21262d] p-6 rounded-lg">
+        <div className="bg-black border border-[#21262d] p-6 rounded-lg">
           <h3 className="text-xl font-bold text-white mb-4">Interaction Tips</h3>
           <div className="space-y-3 text-sm text-[#c9d1d9]">
             <div className="flex items-start gap-3">
@@ -182,22 +155,22 @@ export default function Visualizations3D() {
           </div>
         </div>
 
-        <div className="bg-[#161b22] border border-[#21262d] p-6 rounded-lg">
+        <div className="bg-black border border-[#21262d] p-6 rounded-lg">
           <h3 className="text-xl font-bold text-white mb-4">Visualization Insights</h3>
           <div className="space-y-3">
-            <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#58a6ff]">
+            <div className="bg-black p-4 rounded border-l-4 border-[#58a6ff]">
               <div className="font-semibold text-white mb-1">Clustering Patterns</div>
               <div className="text-sm text-[#c9d1d9]">
                 Modern languages (Rust, TypeScript, Go) cluster in high-activity regions
               </div>
             </div>
-            <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#3fb950]">
+            <div className="bg-black p-4 rounded border-l-4 border-[#3fb950]">
               <div className="font-semibold text-white mb-1">Dimensional Analysis</div>
               <div className="text-sm text-[#c9d1d9]">
                 3D views reveal relationships invisible in 2D projections
               </div>
             </div>
-            <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#bc8cff]">
+            <div className="bg-black p-4 rounded border-l-4 border-[#bc8cff]">
               <div className="font-semibold text-white mb-1">Temporal Evolution</div>
               <div className="text-sm text-[#c9d1d9]">
                 Animated charts show language adoption and growth trajectories

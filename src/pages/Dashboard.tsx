@@ -8,12 +8,11 @@ import EnterpriseReadiness from "@/components/dashboard/EnterpriseReadiness";
 import RepositoryExplorer from "@/components/dashboard/RepositoryExplorer";
 import Visualizations3D from "@/components/dashboard/Visualizations3D";
 import HowToUse from "@/components/dashboard/HowToUse";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const navigation = [
   { name: "Overview", icon: Home, component: "overview" },
   { name: "Language Explorer", icon: Code2, component: "languages" },
-  { name: "3D Visualizations", icon: Boxes, component: "visualizations" },
+  { name: "Interactive Visualizations", icon: Boxes, component: "visualizations" },
   { name: "Correlation Analysis", icon: TrendingUp, component: "correlation" },
   { name: "Enterprise Readiness", icon: Shield, component: "enterprise" },
   { name: "Repository Explorer", icon: Database, component: "repositories" },
@@ -57,7 +56,6 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link href="/">
               <button className="px-4 py-2 bg-[var(--bg-hover)] hover:bg-[var(--border-hover)] border border-[var(--border-default)] rounded text-sm font-medium transition-colors">
                 Back to Home
