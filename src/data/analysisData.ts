@@ -182,16 +182,86 @@ export const languageData = [
 ];
 
 export const topRepositories = [
+  // TypeScript
   { name: "microsoft/vscode", language: "TypeScript", stars: 163000, forks: 28900, contributors: 1900, growth: 0.82 },
-  { name: "rust-lang/rust", language: "Rust", stars: 97000, forks: 12500, contributors: 3200, growth: 0.91 },
-  { name: "golang/go", language: "Go", stars: 123000, forks: 17600, contributors: 2100, growth: 0.67 },
-  { name: "python/cpython", language: "Python", stars: 62000, forks: 29800, contributors: 2500, growth: 0.54 },
-  { name: "facebook/react", language: "JavaScript", stars: 228000, forks: 46600, contributors: 1600, growth: 0.71 },
-  { name: "tensorflow/tensorflow", language: "Python", stars: 185000, forks: 74100, contributors: 3100, growth: 0.63 },
-  { name: "denoland/deno", language: "Rust", stars: 94000, forks: 5200, contributors: 890, growth: 0.95 },
   { name: "microsoft/TypeScript", language: "TypeScript", stars: 100000, forks: 12300, contributors: 780, growth: 0.68 },
+  { name: "angular/angular", language: "TypeScript", stars: 95000, forks: 25200, contributors: 1500, growth: 0.58 },
+  { name: "ant-design/ant-design", language: "TypeScript", stars: 91000, forks: 44500, contributors: 2100, growth: 0.72 },
+  { name: "nestjs/nest", language: "TypeScript", stars: 66000, forks: 7700, contributors: 420, growth: 0.89 },
+  
+  // Rust
+  { name: "rust-lang/rust", language: "Rust", stars: 97000, forks: 12500, contributors: 3200, growth: 0.91 },
+  { name: "denoland/deno", language: "Rust", stars: 94000, forks: 5200, contributors: 890, growth: 0.95 },
+  { name: "tauri-apps/tauri", language: "Rust", stars: 82000, forks: 2500, contributors: 750, growth: 0.93 },
+  { name: "alacritty/alacritty", language: "Rust", stars: 55000, forks: 3000, contributors: 520, growth: 0.78 },
+  { name: "sharkdp/fd", language: "Rust", stars: 33000, forks: 800, contributors: 210, growth: 0.84 },
+  
+  // Go
+  { name: "golang/go", language: "Go", stars: 123000, forks: 17600, contributors: 2100, growth: 0.67 },
   { name: "kubernetes/kubernetes", language: "Go", stars: 110000, forks: 39200, contributors: 3800, growth: 0.59 },
-  { name: "torvalds/linux", language: "C++", stars: 179000, forks: 53200, contributors: 27000, growth: 0.41 }
+  { name: "moby/moby", language: "Go", stars: 68000, forks: 18600, contributors: 2900, growth: 0.52 },
+  { name: "fatedier/frp", language: "Go", stars: 84000, forks: 13000, contributors: 280, growth: 0.81 },
+  { name: "prometheus/prometheus", language: "Go", stars: 54000, forks: 9000, contributors: 920, growth: 0.69 },
+  
+  // Python
+  { name: "tensorflow/tensorflow", language: "Python", stars: 185000, forks: 74100, contributors: 3100, growth: 0.63 },
+  { name: "python/cpython", language: "Python", stars: 62000, forks: 29800, contributors: 2500, growth: 0.54 },
+  { name: "django/django", language: "Python", stars: 78000, forks: 31500, contributors: 2700, growth: 0.61 },
+  { name: "pallets/flask", language: "Python", stars: 67000, forks: 16100, contributors: 810, growth: 0.58 },
+  { name: "pytorch/pytorch", language: "Python", stars: 81000, forks: 21800, contributors: 3400, growth: 0.75 },
+  { name: "psf/requests", language: "Python", stars: 52000, forks: 9300, contributors: 730, growth: 0.49 },
+  
+  // JavaScript
+  { name: "facebook/react", language: "JavaScript", stars: 228000, forks: 46600, contributors: 1600, growth: 0.71 },
+  { name: "vuejs/vue", language: "JavaScript", stars: 207000, forks: 33700, contributors: 440, growth: 0.64 },
+  { name: "nodejs/node", language: "JavaScript", stars: 106000, forks: 29000, contributors: 3500, growth: 0.56 },
+  { name: "vercel/next.js", language: "JavaScript", stars: 124000, forks: 26400, contributors: 3200, growth: 0.88 },
+  { name: "axios/axios", language: "JavaScript", stars: 105000, forks: 10800, contributors: 460, growth: 0.67 },
+  { name: "mrdoob/three.js", language: "JavaScript", stars: 101000, forks: 35300, contributors: 2100, growth: 0.62 },
+  
+  // C++
+  { name: "torvalds/linux", language: "C++", stars: 179000, forks: 53200, contributors: 27000, growth: 0.41 },
+  { name: "electron/electron", language: "C++", stars: 113000, forks: 15200, contributors: 1100, growth: 0.65 },
+  { name: "opencv/opencv", language: "C++", stars: 77000, forks: 55700, contributors: 1600, growth: 0.58 },
+  { name: "godotengine/godot", language: "C++", stars: 88000, forks: 20100, contributors: 2400, growth: 0.79 },
+  { name: "bitcoin/bitcoin", language: "C++", stars: 78000, forks: 36000, contributors: 1200, growth: 0.47 },
+  
+  // Java
+  { name: "spring-projects/spring-boot", language: "Java", stars: 74000, forks: 40500, contributors: 850, growth: 0.68 },
+  { name: "elastic/elasticsearch", language: "Java", stars: 69000, forks: 24700, contributors: 2100, growth: 0.61 },
+  { name: "iluwatar/java-design-patterns", language: "Java", stars: 89000, forks: 26100, contributors: 420, growth: 0.72 },
+  { name: "ReactiveX/RxJava", language: "Java", stars: 48000, forks: 7600, contributors: 310, growth: 0.53 },
+  { name: "square/retrofit", language: "Java", stars: 43000, forks: 7300, contributors: 380, growth: 0.56 },
+  
+  // Ruby
+  { name: "rails/rails", language: "Ruby", stars: 55000, forks: 21500, contributors: 5200, growth: 0.48 },
+  { name: "jekyll/jekyll", language: "Ruby", stars: 49000, forks: 9700, contributors: 1100, growth: 0.52 },
+  { name: "discourse/discourse", language: "Ruby", stars: 41000, forks: 8200, contributors: 790, growth: 0.63 },
+  { name: "rapid7/metasploit-framework", language: "Ruby", stars: 33000, forks: 13700, contributors: 920, growth: 0.55 },
+  
+  // PHP
+  { name: "laravel/laravel", language: "PHP", stars: 78000, forks: 24000, contributors: 680, growth: 0.71 },
+  { name: "symfony/symfony", language: "PHP", stars: 29000, forks: 9400, contributors: 2900, growth: 0.58 },
+  { name: "composer/composer", language: "PHP", stars: 28000, forks: 4400, contributors: 590, growth: 0.54 },
+  { name: "nextcloud/server", language: "PHP", stars: 27000, forks: 4000, contributors: 1300, growth: 0.66 },
+  
+  // Swift
+  { name: "apple/swift", language: "Swift", stars: 67000, forks: 10300, contributors: 1100, growth: 0.62 },
+  { name: "Alamofire/Alamofire", language: "Swift", stars: 41000, forks: 7500, contributors: 320, growth: 0.58 },
+  { name: "vapor/vapor", language: "Swift", stars: 24000, forks: 1400, contributors: 340, growth: 0.74 },
+  { name: "onevcat/Kingfisher", language: "Swift", stars: 23000, forks: 2600, contributors: 190, growth: 0.65 },
+  
+  // Kotlin
+  { name: "JetBrains/kotlin", language: "Kotlin", stars: 49000, forks: 5700, contributors: 450, growth: 0.69 },
+  { name: "square/leakcanary", language: "Kotlin", stars: 29000, forks: 3900, contributors: 180, growth: 0.61 },
+  { name: "google/iosched", language: "Kotlin", stars: 22000, forks: 6200, contributors: 140, growth: 0.54 },
+  { name: "ktorio/ktor", language: "Kotlin", stars: 13000, forks: 1000, contributors: 280, growth: 0.78 },
+  
+  // C#
+  { name: "dotnet/aspnetcore", language: "C#", stars: 35000, forks: 9900, contributors: 1700, growth: 0.66 },
+  { name: "PowerShell/PowerShell", language: "C#", stars: 44000, forks: 7400, contributors: 820, growth: 0.63 },
+  { name: "dotnet/roslyn", language: "C#", stars: 19000, forks: 4000, contributors: 680, growth: 0.58 },
+  { name: "ShareX/ShareX", language: "C#", stars: 29000, forks: 3200, contributors: 140, growth: 0.71 }
 ];
 
 export const correlationData = {
