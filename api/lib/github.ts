@@ -1,5 +1,12 @@
 const GITHUB_API = "https://api.github.com";
 
+export class GithubRateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GithubRateLimitError";
+  }
+}
+
 function authHeaders(): Record<string, string> {
   const token = process.env.GITHUB_TOKEN;
   const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
@@ -7,17 +14,49 @@ function authHeaders(): Record<string, string> {
   return headers;
 }
 
+/** GitHub's documented precedence: Retry-After, then remaining/reset, then a 60s default. */
+function computeRetryDelaySeconds(res: Response): number {
+  const retryAfter = Number(res.headers.get("retry-after"));
+  if (retryAfter > 0) return retryAfter;
+
+  const remaining = res.headers.get("x-ratelimit-remaining");
+  const reset = Number(res.headers.get("x-ratelimit-reset"));
+  if (remaining === "0" && reset > 0) {
+    return Math.max(0, reset - Math.floor(Date.now() / 1000));
+  }
+
+  return 60;
+}
+
+const MAX_RATE_LIMIT_RETRIES = 2;
+// The whole refresh run is capped at ~60s (Vercel maxDuration) across ~300 enriched
+// repos, so we can only afford to wait out short, well-signposted rate-limit windows.
+// Anything longer means the run can't finish anyway, so fail fast and let the caller
+// abort the refresh rather than silently writing zeroed-out fields into the dataset.
+const MAX_TOLERABLE_WAIT_SECONDS = 5;
+
 async function githubFetch(url: string, attempt = 0): Promise<Response> {
   const res = await fetch(url, { headers: authHeaders() });
-  if ((res.status === 403 || res.status === 429) && attempt < 3) {
-    const retryAfter = Number(res.headers.get("retry-after")) || 2 ** attempt * 1.5;
-    await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-    return githubFetch(url, attempt + 1);
+  if (res.ok) return res;
+
+  if (res.status === 403 || res.status === 429) {
+    const waitSeconds = computeRetryDelaySeconds(res);
+    if (attempt < MAX_RATE_LIMIT_RETRIES && waitSeconds <= MAX_TOLERABLE_WAIT_SECONDS) {
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
+      return githubFetch(url, attempt + 1);
+    }
+    throw new GithubRateLimitError(`GitHub rate limit hit for ${url} (retry after ~${waitSeconds}s)`);
   }
+
   return res;
 }
 
-/** Reads the total-count approximation off a paginated endpoint's Link header, using per_page=1. */
+/**
+ * Reads the total-count approximation off a paginated endpoint's Link header, using
+ * per_page=1. Only genuine "not found"-style failures fall through to a 0 count —
+ * rate-limit failures throw out of githubFetch instead, so they can't be mistaken
+ * for a real zero.
+ */
 async function countViaLinkHeader(url: string): Promise<number> {
   const res = await githubFetch(`${url}${url.includes("?") ? "&" : "?"}per_page=1`);
   if (!res.ok) return 0;
@@ -65,6 +104,8 @@ export interface CommunityProfile {
 }
 
 export async function getCommunityProfile(owner: string, repo: string): Promise<CommunityProfile> {
+  // Rate-limit failures throw out of githubFetch; only genuine non-rate-limit
+  // failures (e.g. repo gone) reach this all-false fallback.
   const res = await githubFetch(`${GITHUB_API}/repos/${owner}/${repo}/community/profile`);
   if (!res.ok) {
     return { hasReadme: false, hasLicense: false, hasContributing: false, hasCodeOfConduct: false, hasIssueTemplate: false, hasSecurity: false };

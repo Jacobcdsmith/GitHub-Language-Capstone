@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
+import { timingSafeEqual } from "crypto";
 import {
   searchTopReposByLanguage,
   getCommunityProfile,
@@ -28,7 +29,10 @@ const LANGUAGES = ["Rust", "TypeScript", "Go", "C++", "Python", "JavaScript", "R
 
 const REPOS_PER_LANGUAGE = 100;
 const ENRICHED_PER_LANGUAGE = 25;
-const ENRICH_CONCURRENCY = 10;
+// Each enrichRepo call fires 5 concurrent GitHub requests, so this must be bounded
+// globally (across all 12 languages), not per-language, to stay under GitHub's ~100
+// concurrent secondary rate limit: 15 * 5 = 75, leaving headroom.
+const GLOBAL_ENRICH_CONCURRENCY = 15;
 const OUTPUT_PATH = "public/live-dataset.json";
 const OUTPUT_BRANCH = "main";
 const REPO_OWNER = "Jacobcdsmith";
@@ -73,15 +77,20 @@ async function enrichRepo(item: SearchRepoItem): Promise<EnrichedFields> {
   };
 }
 
-async function buildLanguageDataset(language: string): Promise<{ language: string; repos: LiveRepoRecord[] }> {
-  const items = await searchTopReposByLanguage(language, REPOS_PER_LANGUAGE);
+interface LanguageItems {
+  language: string;
+  items: SearchRepoItem[];
+}
 
+async function fetchLanguageItems(language: string): Promise<LanguageItems> {
+  const items = await searchTopReposByLanguage(language, REPOS_PER_LANGUAGE);
+  return { language, items };
+}
+
+function assembleLanguageRecords(language: string, items: SearchRepoItem[], enrichedFields: EnrichedFields[]): { language: string; repos: LiveRepoRecord[] } {
   const starsNorm = maxScale(items.map((i) => i.stargazers_count));
   const forksNorm = maxScale(items.map((i) => i.forks_count));
   const watchersNorm = maxScale(items.map((i) => i.watchers_count));
-
-  const enrichedTargets = items.slice(0, ENRICHED_PER_LANGUAGE);
-  const enrichedFields = await runWithConcurrency(enrichedTargets, ENRICH_CONCURRENCY, enrichRepo);
 
   const commits30Norm = maxScale(enrichedFields.map((e) => e.commits30d));
   const contributorsNorm = maxScale(enrichedFields.map((e) => e.contributorsCount));
@@ -189,6 +198,12 @@ function computeHealthIndicators(allEnriched: LiveRepoRecord[]): LiveHealthIndic
   }));
 }
 
+function secretsMatch(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
+}
+
 function isAuthorized(req: IncomingMessage): boolean {
   const cronSecret = process.env.CRON_SECRET;
   const refreshSecret = process.env.REFRESH_SECRET;
@@ -196,26 +211,44 @@ function isAuthorized(req: IncomingMessage): boolean {
   const url = new URL(req.url ?? "/", "http://localhost");
   const querySecret = url.searchParams.get("secret");
 
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
-  if (refreshSecret && querySecret === refreshSecret) return true;
+  if (cronSecret && authHeader && secretsMatch(authHeader, `Bearer ${cronSecret}`)) return true;
+  if (refreshSecret && querySecret && secretsMatch(querySecret, refreshSecret)) return true;
   return false;
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  if (!process.env.GITHUB_TOKEN) {
-    res.statusCode = 500;
-    res.end(JSON.stringify({ error: "GITHUB_TOKEN is not configured" }));
-    return;
-  }
-
   if (!isAuthorized(req)) {
     res.statusCode = 401;
     res.end(JSON.stringify({ error: "Unauthorized" }));
     return;
   }
 
+  if (!process.env.GITHUB_TOKEN) {
+    res.statusCode = 500;
+    res.end(JSON.stringify({ error: "GITHUB_TOKEN is not configured" }));
+    return;
+  }
+
   try {
-    const perLanguage = await Promise.all(LANGUAGES.map(buildLanguageDataset));
+    const perLanguageItems = await Promise.all(LANGUAGES.map(fetchLanguageItems));
+
+    interface EnrichmentTask {
+      language: string;
+      item: SearchRepoItem;
+    }
+    const enrichmentTasks: EnrichmentTask[] = perLanguageItems.flatMap(({ language, items }) =>
+      items.slice(0, ENRICHED_PER_LANGUAGE).map((item) => ({ language, item }))
+    );
+
+    const enrichedResults = await runWithConcurrency(enrichmentTasks, GLOBAL_ENRICH_CONCURRENCY, (task) => enrichRepo(task.item));
+
+    let cursor = 0;
+    const perLanguage = perLanguageItems.map(({ language, items }) => {
+      const sampleSize = Math.min(ENRICHED_PER_LANGUAGE, items.length);
+      const enrichedFields = enrichedResults.slice(cursor, cursor + sampleSize);
+      cursor += sampleSize;
+      return assembleLanguageRecords(language, items, enrichedFields);
+    });
 
     const allRepos = perLanguage.flatMap((l) => l.repos);
     const languages = perLanguage.map((l) => summarizeLanguage(l.language, l.repos));

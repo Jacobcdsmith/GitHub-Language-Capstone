@@ -25,24 +25,26 @@ export interface TransformedAnalysisData {
 }
 
 export function transformLiveDataset(dataset: LiveDataset): TransformedAnalysisData {
-  const languageData: LanguageData[] = dataset.languages.map((l) => {
-    const meta = LANGUAGE_META[l.language] ?? { color: "#8b949e", icon: "🔤" };
-    return {
-      name: l.language,
-      overallScore: l.overallScore,
-      popularityScore: l.popularityScore,
-      activityScore: l.activityScore,
-      healthScore: l.healthScore,
-      avgStars: l.avgStars,
-      avgForks: l.avgForks,
-      avgContributors: l.avgContributors,
-      avgCommits: l.avgCommits365d,
-      enterpriseReadiness: Math.round(l.enterpriseReadyPct),
-      growthSignal: l.growthSignal,
-      color: meta.color,
-      icon: meta.icon
-    };
-  });
+  const languageData: LanguageData[] = [...dataset.languages]
+    .sort((a, b) => b.overallScore - a.overallScore)
+    .map((l) => {
+      const meta = LANGUAGE_META[l.language] ?? { color: "#8b949e", icon: "🔤" };
+      return {
+        name: l.language,
+        overallScore: l.overallScore,
+        popularityScore: l.popularityScore,
+        activityScore: l.activityScore,
+        healthScore: l.healthScore,
+        avgStars: l.avgStars,
+        avgForks: l.avgForks,
+        avgContributors: l.avgContributors,
+        avgCommits: l.avgCommits365d,
+        enterpriseReadiness: Math.round(l.enterpriseReadyPct),
+        growthSignal: l.growthSignal,
+        color: meta.color,
+        icon: meta.icon
+      };
+    });
 
   const topRepositories: Repository[] = dataset.repositories
     .filter((r): r is typeof r & { enriched: NonNullable<typeof r.enriched> } => Boolean(r.enriched))

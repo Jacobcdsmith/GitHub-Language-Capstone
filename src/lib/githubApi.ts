@@ -29,9 +29,19 @@ export async function fetchLiveRepoStats(fullName: string): Promise<LiveRepoStat
     return cached.data;
   }
 
-  const response = await fetch(`https://api.github.com/repos/${fullName}`, {
-    headers: { Accept: "application/vnd.github+json" }
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  let response: Response;
+  try {
+    response = await fetch(`https://api.github.com/repos/${fullName}`, {
+      headers: { Accept: "application/vnd.github+json" },
+      signal: controller.signal
+    });
+  } catch (error) {
+    throw error instanceof Error && error.name === "AbortError" ? new GithubApiError("GitHub API request timed out") : error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const rateLimited = response.status === 403 || response.status === 429;
