@@ -1,11 +1,12 @@
 import { Shield, FileText, CheckCircle2, Building2, ClipboardList, ArrowUpDown, BarChart3, TrendingUp, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
-import { languageData, healthIndicators, topRepositories } from "@/data/analysisData";
-import { useState, useMemo } from "react";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
+import { Fragment, useState, useMemo } from "react";
 
 type SortField = "name" | "healthScore" | "enterpriseReadiness" | "avgContributors" | "avgStars";
 type SortOrder = "asc" | "desc";
 
 export default function EnterpriseReadiness() {
+  const { languageData, healthIndicators, topRepositories } = useAnalysisData();
   const [sortField, setSortField] = useState<SortField>("healthScore");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [expandedLanguage, setExpandedLanguage] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export default function EnterpriseReadiness() {
     });
 
     return sorted.slice(0, 6);
-  }, [sortField, sortOrder]);
+  }, [sortField, sortOrder, languageData]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -142,8 +143,8 @@ export default function EnterpriseReadiness() {
                 const isExpanded = expandedLanguage === lang.name;
                 
                 return (
-                  <>
-                    <tr key={lang.name} className="border-b border-[var(--border-default)]/60 last:border-0 hover:bg-[var(--bg-hover)] transition-colors">
+                  <Fragment key={lang.name}>
+                    <tr className="border-b border-[var(--border-default)]/60 last:border-0 hover:bg-[var(--bg-hover)] transition-colors">
                       <td className="py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{lang.icon}</span>
@@ -204,7 +205,7 @@ export default function EnterpriseReadiness() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

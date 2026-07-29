@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { BarChart3, Code2, TrendingUp, Shield, Database, Home, Boxes, BookOpen } from "lucide-react";
+import { BarChart3, Code2, TrendingUp, Shield, Database, Home, Boxes, BookOpen, Radio } from "lucide-react";
 import Overview from "@/components/dashboard/Overview";
 import LanguageExplorer from "@/components/dashboard/LanguageExplorer";
 import CorrelationAnalysis from "@/components/dashboard/CorrelationAnalysis";
@@ -8,6 +8,15 @@ import EnterpriseReadiness from "@/components/dashboard/EnterpriseReadiness";
 import RepositoryExplorer from "@/components/dashboard/RepositoryExplorer";
 import Visualizations3D from "@/components/dashboard/Visualizations3D";
 import HowToUse from "@/components/dashboard/HowToUse";
+import { AnalysisDataProvider, useAnalysisData } from "@/contexts/AnalysisDataContext";
+
+function formatRelativeTime(isoDate: string): string {
+  const diffMinutes = Math.round((Date.now() - new Date(isoDate).getTime()) / 60000);
+  if (diffMinutes < 60) return `${Math.max(diffMinutes, 0)}m ago`;
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return `${Math.round(diffHours / 24)}d ago`;
+}
 
 const navigation = [
   { name: "Overview", icon: Home, component: "overview" },
@@ -20,7 +29,16 @@ const navigation = [
 ];
 
 export default function Dashboard() {
+  return (
+    <AnalysisDataProvider>
+      <DashboardContent />
+    </AnalysisDataProvider>
+  );
+}
+
+function DashboardContent() {
   const [activeSection, setActiveSection] = useState("overview");
+  const { isLive, generatedAt, totalRepoCount } = useAnalysisData();
 
   const renderSection = () => {
     switch (activeSection) {
@@ -56,6 +74,16 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {isLive && generatedAt ? (
+              <div className="flex items-center gap-2 text-xs text-[#3fb950]" title={new Date(generatedAt).toLocaleString()}>
+                <Radio className="w-4 h-4" />
+                Live &middot; refreshed {formatRelativeTime(generatedAt)}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                Snapshot data
+              </div>
+            )}
             <Link href="/">
               <button className="px-4 py-2 bg-[var(--bg-hover)] hover:bg-[var(--border-hover)] border border-[var(--border-default)] rounded text-sm font-medium transition-colors">
                 Back to Home
@@ -96,7 +124,7 @@ export default function Dashboard() {
             </h3>
             <div className="space-y-3">
               <div>
-                <div className="text-2xl font-bold text-[#58a6ff]">1,200</div>
+                <div className="text-2xl font-bold text-[#58a6ff]">{totalRepoCount.toLocaleString()}</div>
                 <div className="text-xs text-[var(--text-secondary)]">Repositories</div>
               </div>
               <div>

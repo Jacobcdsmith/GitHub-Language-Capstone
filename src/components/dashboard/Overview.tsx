@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { languageData, correlationData, segmentData } from "@/data/analysisData";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { TrendingUp, Award, Activity, Sparkles } from "lucide-react";
 import DynamicInsights from "./DynamicInsights";
 
 export default function Overview() {
+  const { languageData, correlationData, segmentData } = useAnalysisData();
   const topLanguages = languageData.slice(0, 5);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
   const [animatedScores, setAnimatedScores] = useState<Record<string, number>>({});

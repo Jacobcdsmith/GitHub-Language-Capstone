@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
 import { Database, Filter, Search, ChevronDown, ChevronUp, ExternalLink, Star, GitFork, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
-import { topRepositories, languageData } from "@/data/analysisData";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { useLiveRepoStats } from "@/hooks/useLiveRepoStats";
-
-const languages = languageData.map((lang) => lang.name);
 
 function formatRelativeTime(isoDate: string): string {
   const diffMinutes = Math.round((Date.now() - new Date(isoDate).getTime()) / 60000);
@@ -115,6 +113,8 @@ function LiveStatsPanel({ fullName, staticStars, staticForks, staticContributors
 }
 
 export default function RepositoryExplorer() {
+  const { topRepositories, languageData } = useAnalysisData();
+  const languages = useMemo(() => languageData.map((lang) => lang.name), [languageData]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState<string | "all">("all");
   const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
@@ -127,7 +127,7 @@ export default function RepositoryExplorer() {
       .filter((repo) =>
         repo.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-  }, [searchTerm, selectedLanguage]);
+  }, [searchTerm, selectedLanguage, topRepositories]);
 
   const toggleExpand = (repoName: string) => {
     setExpandedRepo(expandedRepo === repoName ? null : repoName);

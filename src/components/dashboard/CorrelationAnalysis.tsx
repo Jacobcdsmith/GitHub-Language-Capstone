@@ -1,10 +1,11 @@
-import { languageData, correlationData } from "@/data/analysisData";
+import type { languageData as staticLanguageData } from "@/data/analysisData";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { TrendingUp, Activity, Heart, BarChart3 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type MetricType = 'activity' | 'health' | 'popularity';
 
-type Language = (typeof languageData)[number];
+type Language = (typeof staticLanguageData)[number];
 
 type ScatterPoint = {
   language: Language;
@@ -111,6 +112,7 @@ const getHeatmapColor = (value: number) => {
 };
 
 export default function CorrelationAnalysis() {
+  const { languageData, correlationData } = useAnalysisData();
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('activity');
   const metricDetails = metricConfiguration[selectedMetric];
 
@@ -178,7 +180,7 @@ export default function CorrelationAnalysis() {
         y: { min: yMin, max: yMax }
       }
     };
-  }, [metricDetails]);
+  }, [metricDetails, languageData]);
 
   const [hoverPoint, setHoverPoint] = useState<ScatterPoint | null>(null);
 
