@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { languageData } from "@/data/analysisData";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 
 interface AnimatedComparisonProps {
   selectedLanguages?: string[];
 }
 
 export default function AnimatedComparison({ selectedLanguages }: AnimatedComparisonProps) {
+  const { languageData } = useAnalysisData();
   const [animationProgress, setAnimationProgress] = useState(0);
-  const languages = selectedLanguages 
+  const languages = selectedLanguages
     ? languageData.filter(l => selectedLanguages.includes(l.name))
     : languageData.slice(0, 6);
 

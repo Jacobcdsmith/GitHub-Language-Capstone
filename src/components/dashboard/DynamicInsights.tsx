@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { languageData } from "@/data/analysisData";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { Sparkles, TrendingUp, Award, Zap } from "lucide-react";
 
 interface DynamicInsightsProps {
@@ -10,7 +10,11 @@ interface DynamicInsightsProps {
   };
 }
 
-export default function DynamicInsights({ selectedLanguages = [], filterCriteria = {} }: DynamicInsightsProps) {
+const EMPTY_SELECTED_LANGUAGES: string[] = [];
+const EMPTY_FILTER_CRITERIA: DynamicInsightsProps["filterCriteria"] = {};
+
+export default function DynamicInsights({ selectedLanguages = EMPTY_SELECTED_LANGUAGES, filterCriteria = EMPTY_FILTER_CRITERIA }: DynamicInsightsProps) {
+  const { languageData } = useAnalysisData();
   const [insights, setInsights] = useState<Array<{
     title: string;
     description: string;
@@ -96,7 +100,7 @@ export default function DynamicInsights({ selectedLanguages = [], filterCriteria
     }
 
     setInsights(newInsights);
-  }, [selectedLanguages, filterCriteria]);
+  }, [selectedLanguages, filterCriteria, languageData]);
 
   return (
     <div className="bg-[#161b22] border border-[#21262d] p-6 rounded-lg">

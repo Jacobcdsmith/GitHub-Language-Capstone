@@ -4,6 +4,17 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
+  "functions": {
+    "api/refresh-repos.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/refresh-repos",
+      "schedule": "17 6 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

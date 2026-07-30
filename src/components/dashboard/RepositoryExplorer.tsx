@@ -1,10 +1,113 @@
 import { useMemo, useState } from "react";
-import { Database, Filter, Search, ChevronDown, ChevronUp, ExternalLink, Star, GitFork, Users, TrendingUp } from "lucide-react";
-import { topRepositories, languageData } from "@/data/analysisData";
+import { Database, Filter, Search, ChevronDown, ChevronUp, ExternalLink, Star, GitFork, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
+import { useLiveRepoStats } from "@/hooks/useLiveRepoStats";
+import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
-const languages = languageData.map((lang) => lang.name);
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  hint: string;
+}
+
+function StatCard({ icon, label, value, hint }: StatCardProps) {
+  return (
+    <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-default)]">
+      <div className="flex items-center gap-2 mb-2">
+        {icon}
+        <span className="text-xs font-semibold text-[var(--text-secondary)]">{label}</span>
+      </div>
+      <div className="text-2xl font-bold text-[var(--text-primary)]">{value}</div>
+      <div className="text-xs text-[var(--text-secondary)] mt-1">{hint}</div>
+    </div>
+  );
+}
+
+interface LiveStatsPanelProps {
+  fullName: string;
+  staticStars: number;
+  staticForks: number;
+  staticContributors: number;
+  staticGrowth: number;
+}
+
+function LiveStatsPanel({ fullName, staticStars, staticForks, staticContributors, staticGrowth }: LiveStatsPanelProps) {
+  const { data, loading, error, rateLimited, refetch } = useLiveRepoStats(fullName);
+
+  const stars = data?.stars ?? staticStars;
+  const forks = data?.forks ?? staticForks;
+
+  return (
+    <>
+      <div className="mb-4 text-xs">
+        {data ? (
+          <div className="flex items-center gap-2 text-[#3fb950]">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3fb950] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#3fb950]" />
+            </span>
+            Live from GitHub &middot; updated {formatRelativeTime(data.updatedAt)}
+          </div>
+        ) : loading ? (
+          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+            <RefreshCw className="w-3 h-3 animate-spin" />
+            Fetching live data from GitHub&hellip;
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-[var(--text-muted)]">
+            <span>
+              {error ? (rateLimited ? "GitHub API rate limit reached" : "Live data unavailable") : "Live data"} &mdash; showing snapshot data
+            </span>
+            <button onClick={refetch} className="underline hover:text-[var(--text-secondary)]">
+              retry
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <StatCard
+          icon={<Star className="w-4 h-4 text-[#ffd700]" />}
+          label="Stars"
+          value={stars.toLocaleString()}
+          hint="Community popularity"
+        />
+        <StatCard
+          icon={<GitFork className="w-4 h-4 text-[#58a6ff]" />}
+          label="Forks"
+          value={forks.toLocaleString()}
+          hint="Active derivatives"
+        />
+        <StatCard
+          icon={<Users className="w-4 h-4 text-[#3fb950]" />}
+          label="Contributors"
+          value={staticContributors.toLocaleString()}
+          hint="Active developers"
+        />
+        {data ? (
+          <StatCard
+            icon={<AlertCircle className="w-4 h-4 text-[#f0883e]" />}
+            label="Open Issues"
+            value={data.openIssues.toLocaleString()}
+            hint="Currently tracked on GitHub"
+          />
+        ) : (
+          <StatCard
+            icon={<TrendingUp className="w-4 h-4 text-[#bc8cff]" />}
+            label="Growth Signal"
+            value={`${(staticGrowth * 100).toFixed(0)}%`}
+            hint="Growth trajectory"
+          />
+        )}
+      </div>
+    </>
+  );
+}
 
 export default function RepositoryExplorer() {
+  const { topRepositories, languageData } = useAnalysisData();
+  const languages = useMemo(() => languageData.map((lang) => lang.name), [languageData]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState<string | "all">("all");
   const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
@@ -17,7 +120,7 @@ export default function RepositoryExplorer() {
       .filter((repo) =>
         repo.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-  }, [searchTerm, selectedLanguage]);
+  }, [searchTerm, selectedLanguage, topRepositories]);
 
   const toggleExpand = (repoName: string) => {
     setExpandedRepo(expandedRepo === repoName ? null : repoName);
@@ -126,60 +229,14 @@ export default function RepositoryExplorer() {
                 
                 {isExpanded && (
                   <div className="px-6 pb-6 pt-2 bg-[var(--bg-canvas)] border-t border-[var(--border-default)]">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-default)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Star className="w-4 h-4 text-[#ffd700]" />
-                          <span className="text-xs font-semibold text-[var(--text-secondary)]">Stars</span>
-                        </div>
-                        <div className="text-2xl font-bold text-[var(--text-primary)]">
-                          {repo.stars.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-[var(--text-secondary)] mt-1">
-                          Community popularity
-                        </div>
-                      </div>
-                      
-                      <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-default)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <GitFork className="w-4 h-4 text-[#58a6ff]" />
-                          <span className="text-xs font-semibold text-[var(--text-secondary)]">Forks</span>
-                        </div>
-                        <div className="text-2xl font-bold text-[var(--text-primary)]">
-                          {repo.forks.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-[var(--text-secondary)] mt-1">
-                          Active derivatives
-                        </div>
-                      </div>
-                      
-                      <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-default)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Users className="w-4 h-4 text-[#3fb950]" />
-                          <span className="text-xs font-semibold text-[var(--text-secondary)]">Contributors</span>
-                        </div>
-                        <div className="text-2xl font-bold text-[var(--text-primary)]">
-                          {repo.contributors.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-[var(--text-secondary)] mt-1">
-                          Active developers
-                        </div>
-                      </div>
-                      
-                      <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-default)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <TrendingUp className="w-4 h-4 text-[#bc8cff]" />
-                          <span className="text-xs font-semibold text-[var(--text-secondary)]">Growth Signal</span>
-                        </div>
-                        <div className="text-2xl font-bold text-[var(--text-primary)]">
-                          {(repo.growth * 100).toFixed(0)}%
-                        </div>
-                        <div className="text-xs text-[var(--text-secondary)] mt-1">
-                          Growth trajectory
-                        </div>
-                      </div>
-                    </div>
-                    
+                    <LiveStatsPanel
+                      fullName={repo.name}
+                      staticStars={repo.stars}
+                      staticForks={repo.forks}
+                      staticContributors={repo.contributors}
+                      staticGrowth={repo.growth}
+                    />
+
                     <div className="flex flex-col sm:flex-row gap-3">
                       <a
                         href={repoUrl}

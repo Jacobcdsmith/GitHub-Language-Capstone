@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import { languageData, correlationData, segmentData } from "@/data/analysisData";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { TrendingUp, Award, Activity, Sparkles } from "lucide-react";
 import DynamicInsights from "./DynamicInsights";
 
 export default function Overview() {
+  const { languageData, correlationData, segmentData } = useAnalysisData();
   const topLanguages = languageData.slice(0, 5);
+  const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
+  const mostActiveLanguage = languageData.reduce((max, lang) => (lang.activityScore > max.activityScore ? lang : max), languageData[0]);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
   const [animatedScores, setAnimatedScores] = useState<Record<string, number>>({});
 
@@ -36,8 +39,8 @@ export default function Overview() {
             </div>
             <h3 className="text-lg font-semibold text-white">Top Language</h3>
           </div>
-          <div className="text-4xl font-bold text-[#CE422B] mb-2">Rust</div>
-          <div className="text-sm text-[#8b949e]">Overall Score: 49.40</div>
+          <div className="text-4xl font-bold mb-2" style={{ color: topLanguage.color }}>{topLanguage.name}</div>
+          <div className="text-sm text-[#8b949e]">Overall Score: {topLanguage.overallScore.toFixed(2)}</div>
           <div className="mt-4 text-sm text-[#c9d1d9]">
             Leads with balanced strength across all dimensions
           </div>
@@ -50,10 +53,10 @@ export default function Overview() {
             </div>
             <h3 className="text-lg font-semibold text-white">Most Active</h3>
           </div>
-          <div className="text-4xl font-bold text-[#3178C6] mb-2">TypeScript</div>
-          <div className="text-sm text-[#8b949e]">Activity Score: 69.44</div>
+          <div className="text-4xl font-bold mb-2" style={{ color: mostActiveLanguage.color }}>{mostActiveLanguage.name}</div>
+          <div className="text-sm text-[#8b949e]">Activity Score: {mostActiveLanguage.activityScore.toFixed(2)}</div>
           <div className="mt-4 text-sm text-[#c9d1d9]">
-            311 avg contributors, highest engagement
+            {mostActiveLanguage.avgContributors} avg contributors, highest engagement
           </div>
         </div>
 
@@ -65,9 +68,9 @@ export default function Overview() {
             <h3 className="text-lg font-semibold text-white">Strongest Predictor</h3>
           </div>
           <div className="text-4xl font-bold text-[#3fb950] mb-2">Activity</div>
-          <div className="text-sm text-[#8b949e]">Correlation: r = 0.85</div>
+          <div className="text-sm text-[#8b949e]">Correlation: r = {correlationData.activityVsOverall.r}</div>
           <div className="mt-4 text-sm text-[#c9d1d9]">
-            Better predictor than popularity (r = 0.57)
+            Better predictor than popularity (r = {correlationData.popularityVsOverall.r})
           </div>
         </div>
       </div>

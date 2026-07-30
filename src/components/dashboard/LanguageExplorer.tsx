@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { languageData } from "@/data/analysisData";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { Search, Filter, Zap } from "lucide-react";
 import AnimatedComparison from "./AnimatedComparison";
 import RadarChart from "./RadarChart";
@@ -10,6 +10,7 @@ interface LanguageExplorerProps {
 }
 
 export default function LanguageExplorer({ onSelectionChange }: LanguageExplorerProps = {}) {
+  const { languageData } = useAnalysisData();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"overall" | "popularity" | "activity" | "health">("overall");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
