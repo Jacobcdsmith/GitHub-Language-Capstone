@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Database, Filter, Search, ChevronDown, ChevronUp, ExternalLink, Star, GitFork, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
+import { Database, Filter, Search, ChevronDown, ChevronUp, ExternalLink, Star, GitFork, Users, TrendingUp, AlertCircle, RefreshCw, GitPullRequest, Tag } from "lucide-react";
 import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { useLiveRepoStats } from "@/hooks/useLiveRepoStats";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
@@ -30,9 +30,20 @@ interface LiveStatsPanelProps {
   staticForks: number;
   staticContributors: number;
   staticGrowth: number;
+  openPullRequests: number;
+  hasReleases: boolean;
+  daysSinceLastRelease: number | null;
 }
 
-function LiveStatsPanel({ fullName, staticStars, staticForks, staticContributors, staticGrowth }: LiveStatsPanelProps) {
+function formatReleaseRecency(hasReleases: boolean, daysSinceLastRelease: number | null): string {
+  if (!hasReleases || daysSinceLastRelease === null) return "No releases";
+  if (daysSinceLastRelease < 1) return "Today";
+  if (daysSinceLastRelease < 30) return `${Math.round(daysSinceLastRelease)}d ago`;
+  if (daysSinceLastRelease < 365) return `${Math.round(daysSinceLastRelease / 30)}mo ago`;
+  return `${(daysSinceLastRelease / 365).toFixed(1)}y ago`;
+}
+
+function LiveStatsPanel({ fullName, staticStars, staticForks, staticContributors, staticGrowth, openPullRequests, hasReleases, daysSinceLastRelease }: LiveStatsPanelProps) {
   const { data, loading, error, rateLimited, refetch } = useLiveRepoStats(fullName);
 
   const stars = data?.stars ?? staticStars;
@@ -66,7 +77,7 @@ function LiveStatsPanel({ fullName, staticStars, staticForks, staticContributors
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <StatCard
           icon={<Star className="w-4 h-4 text-[#ffd700]" />}
           label="Stars"
@@ -100,6 +111,18 @@ function LiveStatsPanel({ fullName, staticStars, staticForks, staticContributors
             hint="Growth trajectory"
           />
         )}
+        <StatCard
+          icon={<GitPullRequest className="w-4 h-4 text-[#3fb950]" />}
+          label="Open Pull Requests"
+          value={openPullRequests.toLocaleString()}
+          hint="Real-world maintenance load"
+        />
+        <StatCard
+          icon={<Tag className="w-4 h-4 text-[#f0883e]" />}
+          label="Last Release"
+          value={formatReleaseRecency(hasReleases, daysSinceLastRelease)}
+          hint="Release cadence signal"
+        />
       </div>
     </>
   );
@@ -235,6 +258,9 @@ export default function RepositoryExplorer() {
                       staticForks={repo.forks}
                       staticContributors={repo.contributors}
                       staticGrowth={repo.growth}
+                      openPullRequests={repo.openPullRequests}
+                      hasReleases={repo.hasReleases}
+                      daysSinceLastRelease={repo.daysSinceLastRelease}
                     />
 
                     <div className="flex flex-col sm:flex-row gap-3">

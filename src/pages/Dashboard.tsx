@@ -23,7 +23,7 @@ const navigation = [
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("overview");
-  const { isLive, generatedAt, totalRepoCount } = useAnalysisData();
+  const { generatedAt, totalRepoCount } = useAnalysisData();
 
   const renderSection = () => {
     switch (activeSection) {
@@ -59,16 +59,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {isLive && generatedAt ? (
-              <div className="flex items-center gap-2 text-xs text-[#3fb950]" title={new Date(generatedAt).toLocaleString()}>
-                <Radio className="w-4 h-4" />
-                Live &middot; refreshed {formatRelativeTime(generatedAt)}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                Snapshot data
-              </div>
-            )}
+            <div className="flex items-center gap-2 text-xs text-[#3fb950]" title={new Date(generatedAt).toLocaleString()}>
+              <Radio className="w-4 h-4" />
+              Live &middot; refreshed {formatRelativeTime(generatedAt)}
+            </div>
             <Link href="/">
               <button className="px-4 py-2 bg-[var(--bg-hover)] hover:bg-[var(--border-hover)] border border-[var(--border-default)] rounded text-sm font-medium transition-colors">
                 Back to Home

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAnalysisData } from "@/contexts/AnalysisDataContext";
-import { TrendingUp, Award, Activity, Sparkles } from "lucide-react";
+import { TrendingUp, Award, Activity, Sparkles, LineChart } from "lucide-react";
 import DynamicInsights from "./DynamicInsights";
+import TrendChart from "./TrendChart";
 
 export default function Overview() {
   const { languageData, correlationData, segmentData, healthIndicators } = useAnalysisData();
@@ -13,6 +14,11 @@ export default function Overview() {
   const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
   const top3ScoreGap = Math.max(0, mean(top3Languages.map((l) => l.overallScore)) - mean(remainingLanguages.map((l) => l.overallScore)));
   const topHealthIndicator = [...healthIndicators].sort((a, b) => b.impact - a.impact).slice(0, 2);
+  const [strongestCorrelation, , weakestCorrelation] = [
+    { label: "Activity", r: correlationData.activityVsOverall.r },
+    { label: "Popularity", r: correlationData.popularityVsOverall.r },
+    { label: "Health", r: correlationData.healthVsOverall.r }
+  ].sort((a, b) => b.r - a.r);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
   const [animatedScores, setAnimatedScores] = useState<Record<string, number>>({});
 
@@ -72,16 +78,25 @@ export default function Overview() {
             </div>
             <h3 className="text-lg font-semibold text-white">Strongest Predictor</h3>
           </div>
-          <div className="text-4xl font-bold text-[#3fb950] mb-2">Activity</div>
-          <div className="text-sm text-[#8b949e]">Correlation: r = {correlationData.activityVsOverall.r}</div>
+          <div className="text-4xl font-bold text-[#3fb950] mb-2">{strongestCorrelation.label}</div>
+          <div className="text-sm text-[#8b949e]">Correlation: r = {strongestCorrelation.r}</div>
           <div className="mt-4 text-sm text-[#c9d1d9]">
-            Better predictor than popularity (r = {correlationData.popularityVsOverall.r})
+            Better predictor than {weakestCorrelation.label.toLowerCase()} (r = {weakestCorrelation.r})
           </div>
         </div>
       </div>
 
       {/* Dynamic Insights */}
       <DynamicInsights />
+
+      {/* Historical Trend */}
+      <div className="bg-[#161b22] border border-[#21262d] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <LineChart className="w-5 h-5 text-[#58a6ff]" />
+          <h3 className="text-xl font-bold text-white">Overall Score Trend</h3>
+        </div>
+        <TrendChart languages={topLanguages.map((l) => ({ name: l.name, color: l.color }))} />
+      </div>
 
       {/* Top 5 Languages Ranking */}
       <div className="bg-[#161b22] border border-[#21262d] p-6">
@@ -162,9 +177,9 @@ export default function Overview() {
               </div>
             </div>
             <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#58a6ff]">
-              <div className="font-semibold text-white mb-2">Activity Predicts Success</div>
+              <div className="font-semibold text-white mb-2">{strongestCorrelation.label} Predicts Success</div>
               <div className="text-sm text-[#c9d1d9]">
-                Activity metrics (r={correlationData.activityVsOverall.r}) demonstrate stronger correlation with success than popularity (r={correlationData.popularityVsOverall.r})
+                {strongestCorrelation.label} metrics (r={strongestCorrelation.r}) demonstrate stronger correlation with success than {weakestCorrelation.label.toLowerCase()} (r={weakestCorrelation.r})
               </div>
             </div>
             <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#bc8cff]">

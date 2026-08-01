@@ -5,7 +5,7 @@ import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
 export default function Home() {
-  const { languageData, correlationData, healthIndicators, isLive, generatedAt, totalRepoCount } = useAnalysisData();
+  const { languageData, correlationData, healthIndicators, generatedAt, totalRepoCount } = useAnalysisData();
   const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
   const mostActiveLanguage = languageData.reduce((max, lang) => (lang.activityScore > max.activityScore ? lang : max), languageData[0]);
   const topHealthIndicator = [...healthIndicators].sort((a, b) => b.impact - a.impact).slice(0, 2);
@@ -29,14 +29,10 @@ export default function Home() {
           <p className="text-2xl text-[var(--text-secondary)] mb-4 max-w-3xl mx-auto">
             Comprehensive analysis of {totalRepoCount.toLocaleString()} repositories across {languageData.length} programming languages
           </p>
-          {isLive && generatedAt ? (
-            <div className="flex items-center justify-center gap-2 text-sm text-[#3fb950] mb-8">
-              <Radio className="w-4 h-4" />
-              Live data &middot; refreshed {formatRelativeTime(generatedAt)}
-            </div>
-          ) : (
-            <div className="text-sm text-[var(--text-muted)] mb-8">Snapshot data</div>
-          )}
+          <div className="flex items-center justify-center gap-2 text-sm text-[#3fb950] mb-8">
+            <Radio className="w-4 h-4" />
+            Live data &middot; refreshed {formatRelativeTime(generatedAt)}
+          </div>
           <Link href="/dashboard">
             <button className="inline-flex items-center gap-3 px-8 py-4 bg-[#58a6ff] hover:bg-[#4a9aef] text-white text-lg font-semibold rounded-lg transition-colors shadow-lg">
               <span>Explore Dashboard</span>

@@ -5,8 +5,11 @@ import {
   getCommunityProfile,
   getContributorsCount,
   getCommitsCountSince,
+  getOpenPullRequestCount,
+  getLatestReleaseInfo,
   runWithConcurrency,
   putRepoContent,
+  getRepoFile,
   type SearchRepoItem
 } from "./lib/github";
 import {
@@ -22,21 +25,59 @@ import {
   growthSignal,
   pearsonCorrelation
 } from "./lib/scoring";
-import type { LiveDataset, LiveRepoRecord, LiveLanguageSummary, LiveHealthIndicator } from "../src/types/liveDataset";
+import type { LiveDataset, LiveRepoRecord, LiveLanguageSummary, LiveHealthIndicator, HistoryEntry } from "../src/types/liveDataset";
 
 // Must match the language names used in src/data/analysisData.ts.
 const LANGUAGES = ["Rust", "TypeScript", "Go", "C++", "Python", "JavaScript", "Ruby", "Java", "Kotlin", "PHP", "Swift", "C#"];
 
 const REPOS_PER_LANGUAGE = 100;
 const ENRICHED_PER_LANGUAGE = 25;
-// Each enrichRepo call fires 5 concurrent GitHub requests, so this must be bounded
+// Each enrichRepo call fires 7 concurrent GitHub requests, so this must be bounded
 // globally (across all 12 languages), not per-language, to stay under GitHub's ~100
-// concurrent secondary rate limit: 15 * 5 = 75, leaving headroom.
-const GLOBAL_ENRICH_CONCURRENCY = 15;
+// concurrent secondary rate limit: 12 * 7 = 84, leaving headroom.
+const GLOBAL_ENRICH_CONCURRENCY = 12;
+const RECENT_RELEASE_WINDOW_DAYS = 180;
 const OUTPUT_PATH = "public/live-dataset.json";
+const HISTORY_PATH = "public/history.json";
+const HISTORY_MAX_ENTRIES = 90;
 const OUTPUT_BRANCH = "main";
 const REPO_OWNER = "Jacobcdsmith";
 const REPO_NAME = "GitHub-Language-Capstone";
+
+async function updateHistory(languages: LiveLanguageSummary[], generatedAt: string): Promise<void> {
+  const todayDate = generatedAt.slice(0, 10);
+
+  let history: HistoryEntry[] = [];
+  const existingFile = await getRepoFile(REPO_OWNER, REPO_NAME, HISTORY_PATH, OUTPUT_BRANCH);
+  if (existingFile) {
+    try {
+      const parsed = JSON.parse(existingFile.content);
+      if (Array.isArray(parsed)) history = parsed;
+    } catch {
+      history = [];
+    }
+  }
+
+  const newEntry: HistoryEntry = {
+    date: todayDate,
+    generatedAt,
+    languages: languages.map((l) => ({
+      language: l.language,
+      overallScore: l.overallScore,
+      popularityScore: l.popularityScore,
+      activityScore: l.activityScore,
+      healthScore: l.healthScore
+    }))
+  };
+
+  // A same-day re-run (e.g. manual trigger after the daily cron already ran)
+  // replaces that day's entry rather than duplicating it.
+  const updated = [...history.filter((h) => h.date !== todayDate), newEntry]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-HISTORY_MAX_ENTRIES);
+
+  await putRepoContent(REPO_OWNER, REPO_NAME, HISTORY_PATH, OUTPUT_BRANCH, JSON.stringify(updated, null, 2), `chore(data): update history (${todayDate})`);
+}
 
 function daysSince(iso: string): number {
   return Math.max(0, (Date.now() - new Date(iso).getTime()) / (24 * 60 * 60 * 1000));
@@ -53,15 +94,20 @@ interface EnrichedFields {
   hasCodeOfConduct: boolean;
   hasIssueTemplate: boolean;
   hasSecurity: boolean;
+  openPullRequests: number;
+  hasReleases: boolean;
+  daysSinceLastRelease: number | null;
 }
 
 async function enrichRepo(item: SearchRepoItem): Promise<EnrichedFields> {
-  const [profile, contributorsCount, commits30d, commits90d, commits365d] = await Promise.all([
+  const [profile, contributorsCount, commits30d, commits90d, commits365d, openPullRequests, releaseInfo] = await Promise.all([
     getCommunityProfile(item.owner.login, item.name),
     getContributorsCount(item.owner.login, item.name),
     getCommitsCountSince(item.owner.login, item.name, 30),
     getCommitsCountSince(item.owner.login, item.name, 90),
-    getCommitsCountSince(item.owner.login, item.name, 365)
+    getCommitsCountSince(item.owner.login, item.name, 365),
+    getOpenPullRequestCount(item.owner.login, item.name),
+    getLatestReleaseInfo(item.owner.login, item.name)
   ]);
   return {
     contributorsCount,
@@ -73,7 +119,10 @@ async function enrichRepo(item: SearchRepoItem): Promise<EnrichedFields> {
     hasContributing: profile.hasContributing,
     hasCodeOfConduct: profile.hasCodeOfConduct,
     hasIssueTemplate: profile.hasIssueTemplate,
-    hasSecurity: profile.hasSecurity
+    hasSecurity: profile.hasSecurity,
+    openPullRequests,
+    hasReleases: releaseInfo.hasReleases,
+    daysSinceLastRelease: releaseInfo.daysSinceLastRelease
   };
 }
 
@@ -125,7 +174,10 @@ function assembleLanguageRecords(language: string, items: SearchRepoItem[], enri
         hasContributing: enrichedField.hasContributing,
         hasCodeOfConduct: enrichedField.hasCodeOfConduct,
         hasIssueTemplate: enrichedField.hasIssueTemplate,
-        hasSecurity: enrichedField.hasSecurity
+        hasSecurity: enrichedField.hasSecurity,
+        openPullRequests: enrichedField.openPullRequests,
+        hasReleases: enrichedField.hasReleases,
+        daysSinceLastRelease: enrichedField.daysSinceLastRelease
       };
     }
 
@@ -162,6 +214,10 @@ function summarizeLanguage(language: string, repos: LiveRepoRecord[]): LiveLangu
     avgForks: Math.round(mean(repos.map((r) => r.forks))),
     avgContributors: Math.round(mean(enriched.map((r) => r.enriched!.contributorsCount))),
     avgCommits365d: Math.round(mean(enriched.map((r) => r.enriched!.commits365d))),
+    avgOpenPullRequests: Math.round(mean(enriched.map((r) => r.enriched!.openPullRequests))),
+    pctWithRecentRelease: Number(
+      ((enriched.filter((r) => r.enriched!.hasReleases && (r.enriched!.daysSinceLastRelease ?? Infinity) <= RECENT_RELEASE_WINDOW_DAYS).length / (enriched.length || 1)) * 100).toFixed(1)
+    ),
     popularityScore: Number(mean(repos.map((r) => r.popularityScore)).toFixed(2)),
     activityScore: Number(mean(enriched.map((r) => r.enriched!.activityScore)).toFixed(2)),
     healthScore: Number(mean(enriched.map((r) => r.enriched!.healthScore)).toFixed(2)),
@@ -288,10 +344,10 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         enrichedPerLanguage: ENRICHED_PER_LANGUAGE,
         notes:
           "Popularity/recency are computed live across all fetched repos per language. " +
-          "Activity/health/overall/growth scores require extra per-repo GitHub API calls " +
-          "(contributors, commit windows, community profile) and are computed for the top " +
-          `${ENRICHED_PER_LANGUAGE} most-starred repos per language to stay within API limits; ` +
-          "language-level activity/health/overall/growth averages are means over that sample."
+          "Activity/health/overall/growth/open-PR/release-recency scores require extra per-repo " +
+          "GitHub API calls (contributors, commit windows, community profile, pulls, releases) and " +
+          `are computed for the top ${ENRICHED_PER_LANGUAGE} most-starred repos per language to stay ` +
+          "within API limits; language-level averages for those fields are means over that sample."
       },
       languages,
       repositories: allRepos,
@@ -308,6 +364,15 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       `chore(data): refresh live dataset (${dataset.generatedAt})`
     );
 
+    // Best-effort: the trend chart is a nice-to-have, so a history-write failure
+    // shouldn't turn a successful primary refresh into a 500.
+    let historyUpdated = true;
+    try {
+      await updateHistory(languages, dataset.generatedAt);
+    } catch {
+      historyUpdated = false;
+    }
+
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(
@@ -315,7 +380,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         ok: true,
         generatedAt: dataset.generatedAt,
         repoCount: allRepos.length,
-        enrichedCount: allEnriched.length
+        enrichedCount: allEnriched.length,
+        historyUpdated
       })
     );
   } catch (error) {

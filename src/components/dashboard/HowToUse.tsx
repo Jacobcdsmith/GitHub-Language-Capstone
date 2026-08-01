@@ -3,7 +3,7 @@ import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
 export default function HowToUse() {
-  const { languageData, correlationData, isLive, generatedAt, totalRepoCount } = useAnalysisData();
+  const { languageData, correlationData, generatedAt, totalRepoCount } = useAnalysisData();
   const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
   const mostPopularLanguage = languageData.reduce((max, lang) => (lang.avgStars > max.avgStars ? lang : max), languageData[0]);
   const rankedCorrelations = [
@@ -275,17 +275,11 @@ export default function HowToUse() {
           <div>
             <h4 className="font-semibold text-white mb-1">Q: How often is the data updated?</h4>
             <p className="text-sm text-[#c9d1d9]">
-              {isLive && generatedAt ? (
-                <>This dashboard is live: a scheduled job refreshes scores for {totalRepoCount.toLocaleString()} repositories directly
-                from the GitHub API (last refreshed {formatRelativeTime(generatedAt)}). Popularity and recency are recomputed for every
-                fetched repo; activity/health/overall scores are computed for a representative top-scoring sample per language to stay
-                within API limits — see the language-level averages' methodology for details.</>
-              ) : (
-                <>This dashboard is designed to refresh live from the GitHub API on a schedule, but is currently showing a static
-                snapshot of {totalRepoCount.toLocaleString()} repositories — either the live pipeline hasn't run yet or is temporarily
-                unavailable. Live mode is indicated by a green "Live" badge in the header; this snapshot may not reflect real-time
-                changes.</>
-              )}
+              This dashboard is live: a scheduled job refreshes scores for {totalRepoCount.toLocaleString()} repositories directly
+              from the GitHub API (last refreshed {formatRelativeTime(generatedAt)}). Popularity and recency are recomputed for every
+              fetched repo; activity/health/overall scores are computed for a representative top-scoring sample per language to stay
+              within API limits — see the language-level averages' methodology for details. There is no static fallback: if the live
+              pipeline can't be reached, the dashboard shows an explicit error instead of stale numbers.
             </p>
           </div>
 
