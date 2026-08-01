@@ -147,10 +147,10 @@ export interface ReleaseInfo {
 }
 
 export async function getLatestReleaseInfo(owner: string, repo: string): Promise<ReleaseInfo> {
-  const res = await githubFetch(`${GITHUB_API}/repos/${owner}/${repo}/releases?per_page=1`);
+  const res = await githubFetch(`${GITHUB_API}/repos/${owner}/${repo}/releases?per_page=5`);
   if (!res.ok) return { hasReleases: false, daysSinceLastRelease: null };
   const releases = (await res.json()) as Array<{ published_at: string | null }>;
-  const latest = Array.isArray(releases) ? releases[0] : undefined;
+  const latest = Array.isArray(releases) ? releases.find((r) => r.published_at) : undefined;
   if (!latest?.published_at) return { hasReleases: false, daysSinceLastRelease: null };
   const days = Math.max(0, (Date.now() - new Date(latest.published_at).getTime()) / (24 * 60 * 60 * 1000));
   return { hasReleases: true, daysSinceLastRelease: Math.round(days) };

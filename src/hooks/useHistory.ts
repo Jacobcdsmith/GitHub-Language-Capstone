@@ -1,10 +1,28 @@
 import { useEffect, useState } from "react";
-import type { LiveHistory } from "@/types/liveDataset";
+import type { HistoryEntry, LiveHistory } from "@/types/liveDataset";
 
 interface UseHistoryResult {
   history: LiveHistory | null;
   loading: boolean;
   error: string | null;
+}
+
+function isValidHistoryEntry(entry: unknown): entry is HistoryEntry {
+  if (typeof entry !== "object" || entry === null) return false;
+  const e = entry as Record<string, unknown>;
+  if (typeof e.date !== "string" || typeof e.generatedAt !== "string") return false;
+  if (!Array.isArray(e.languages)) return false;
+  return e.languages.every((l) => {
+    if (typeof l !== "object" || l === null) return false;
+    const lang = l as Record<string, unknown>;
+    return (
+      typeof lang.language === "string" &&
+      typeof lang.overallScore === "number" &&
+      typeof lang.popularityScore === "number" &&
+      typeof lang.activityScore === "number" &&
+      typeof lang.healthScore === "number"
+    );
+  });
 }
 
 /**
@@ -32,7 +50,10 @@ export function useHistory(): UseHistoryResult {
       })
       .then((data) => {
         if (cancelled) return;
-        setHistory(Array.isArray(data) ? data : []);
+        if (!Array.isArray(data) || !data.every(isValidHistoryEntry)) {
+          throw new Error("History data is malformed");
+        }
+        setHistory(data);
       })
       .catch((err: unknown) => {
         if (cancelled) return;

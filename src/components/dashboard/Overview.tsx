@@ -3,6 +3,7 @@ import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { TrendingUp, Award, Activity, Sparkles, LineChart } from "lucide-react";
 import DynamicInsights from "./DynamicInsights";
 import TrendChart from "./TrendChart";
+import { rankCorrelations } from "@/lib/correlations";
 
 export default function Overview() {
   const { languageData, correlationData, segmentData, healthIndicators } = useAnalysisData();
@@ -14,11 +15,7 @@ export default function Overview() {
   const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
   const top3ScoreGap = Math.max(0, mean(top3Languages.map((l) => l.overallScore)) - mean(remainingLanguages.map((l) => l.overallScore)));
   const topHealthIndicator = [...healthIndicators].sort((a, b) => b.impact - a.impact).slice(0, 2);
-  const [strongestCorrelation, , weakestCorrelation] = [
-    { label: "Activity", r: correlationData.activityVsOverall.r },
-    { label: "Popularity", r: correlationData.popularityVsOverall.r },
-    { label: "Health", r: correlationData.healthVsOverall.r }
-  ].sort((a, b) => b.r - a.r);
+  const [strongestCorrelation, , weakestCorrelation] = rankCorrelations(correlationData);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
   const [animatedScores, setAnimatedScores] = useState<Record<string, number>>({});
 

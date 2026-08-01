@@ -264,18 +264,6 @@ export const topRepositories = [
   { name: "ShareX/ShareX", language: "C#", stars: 29000, forks: 3200, contributors: 140, growth: 0.71 }
 ];
 
-export const correlationData = {
-  activityVsOverall: { r: 0.85, rSquared: 0.72 },
-  popularityVsOverall: { r: 0.57, rSquared: 0.33 },
-  healthVsOverall: { r: 0.68, rSquared: 0.46 },
-  // Computed directly from data/raw/repositories_enriched.csv (Pearson r, n=1200) —
-  // these three pairs were never surfaced as constants before this file's heatmap
-  // used hardcoded illustrative numbers instead of real correlations.
-  activityVsHealth: { r: 0.23, rSquared: 0.05 },
-  activityVsPopularity: { r: 0.2, rSquared: 0.04 },
-  healthVsPopularity: { r: 0.02, rSquared: 0.0 }
-};
-
 export const segmentData = [
   { segment: "High Performance", languages: ["Rust", "C++", "Go"], avgScore: 46.81, repos: 450 },
   { segment: "Web Development", languages: ["TypeScript", "JavaScript"], avgScore: 45.82, repos: 520 },

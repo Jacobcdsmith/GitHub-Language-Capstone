@@ -14,8 +14,19 @@ interface AnalysisDataContextValue {
 
 const AnalysisDataContext = createContext<AnalysisDataContextValue | null>(null);
 
+const FETCH_TIMEOUT_MS = 15000;
+
 async function fetchLiveDataset(): Promise<LiveDataset> {
-  const res = await fetch("/live-dataset.json", { cache: "no-store" });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch("/live-dataset.json", { cache: "no-store", signal: controller.signal });
+  } catch (error) {
+    throw new Error(error instanceof DOMException && error.name === "AbortError" ? "Live data request timed out." : "Live data request failed.");
+  } finally {
+    clearTimeout(timeoutId);
+  }
   if (!res.ok) {
     throw new Error(`Live data request failed (status ${res.status}).`);
   }
@@ -26,11 +37,16 @@ async function fetchLiveDataset(): Promise<LiveDataset> {
   if (!contentType.includes("application/json")) {
     throw new Error("The live data pipeline hasn't published a dataset yet.");
   }
+  let dataset: LiveDataset;
   try {
-    return (await res.json()) as LiveDataset;
+    dataset = (await res.json()) as LiveDataset;
   } catch {
     throw new Error("The live data pipeline returned an unreadable response.");
   }
+  if (!Array.isArray(dataset.languages) || dataset.languages.length === 0) {
+    throw new Error("The live dataset has no language data yet.");
+  }
+  return dataset;
 }
 
 /**

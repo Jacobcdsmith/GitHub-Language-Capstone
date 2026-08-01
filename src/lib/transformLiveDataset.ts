@@ -1,5 +1,5 @@
-import type { LiveDataset } from "@/types/liveDataset";
-import { languageData as staticLanguageData, topRepositories as staticTopRepositories, correlationData as staticCorrelationData, segmentData as staticSegmentData, healthIndicators as staticHealthIndicators } from "@/data/analysisData";
+import type { LiveDataset, LiveCorrelations } from "@/types/liveDataset";
+import { languageData as staticLanguageData, topRepositories as staticTopRepositories, segmentData as staticSegmentData, healthIndicators as staticHealthIndicators } from "@/data/analysisData";
 
 type LanguageData = typeof staticLanguageData[number] & {
   avgOpenPullRequests: number;
@@ -26,7 +26,7 @@ const SEGMENT_DEFINITIONS: { segment: string; languages: string[] }[] = staticSe
 export interface TransformedAnalysisData {
   languageData: LanguageData[];
   topRepositories: Repository[];
-  correlationData: typeof staticCorrelationData;
+  correlationData: LiveCorrelations;
   segmentData: Segment[];
   healthIndicators: HealthIndicator[];
 }

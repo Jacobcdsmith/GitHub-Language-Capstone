@@ -70,9 +70,12 @@ async function updateHistory(languages: LiveLanguageSummary[], generatedAt: stri
     }))
   };
 
-  // A same-day re-run (e.g. manual trigger after the daily cron already ran)
-  // replaces that day's entry rather than duplicating it.
-  const updated = [...history.filter((h) => h.date !== todayDate), newEntry]
+  // Dedupe by calendar date (not just today's) in case older entries were ever
+  // duplicated — a same-day re-run replaces that day's entry rather than
+  // duplicating it.
+  const byDate = new Map(history.map((h) => [h.date, h]));
+  byDate.set(todayDate, newEntry);
+  const updated = [...byDate.values()]
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(-HISTORY_MAX_ENTRIES);
 

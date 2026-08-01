@@ -3,17 +3,14 @@ import { BarChart3, ArrowRight, TrendingUp, Code2, Shield, Boxes, Radio } from "
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import { rankCorrelations } from "@/lib/correlations";
 
 export default function Home() {
   const { languageData, correlationData, healthIndicators, generatedAt, totalRepoCount } = useAnalysisData();
   const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
   const mostActiveLanguage = languageData.reduce((max, lang) => (lang.activityScore > max.activityScore ? lang : max), languageData[0]);
   const topHealthIndicator = [...healthIndicators].sort((a, b) => b.impact - a.impact).slice(0, 2);
-  const [strongestCorrelation, , weakestCorrelation] = [
-    { label: "Activity", r: correlationData.activityVsOverall.r },
-    { label: "Popularity", r: correlationData.popularityVsOverall.r },
-    { label: "Health", r: correlationData.healthVsOverall.r }
-  ].sort((a, b) => b.r - a.r);
+  const [strongestCorrelation, , weakestCorrelation] = rankCorrelations(correlationData);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-surface)] to-[var(--bg-primary)]">

@@ -1,16 +1,13 @@
 import { BookOpen, BarChart3, TrendingUp, Shield, Info } from "lucide-react";
 import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import { rankCorrelations } from "@/lib/correlations";
 
 export default function HowToUse() {
   const { languageData, correlationData, generatedAt, totalRepoCount } = useAnalysisData();
   const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
   const mostPopularLanguage = languageData.reduce((max, lang) => (lang.avgStars > max.avgStars ? lang : max), languageData[0]);
-  const rankedCorrelations = [
-    { label: "Activity", target: "Overall Success", r: correlationData.activityVsOverall.r },
-    { label: "Health", target: "Overall Success", r: correlationData.healthVsOverall.r },
-    { label: "Popularity", target: "Overall Success", r: correlationData.popularityVsOverall.r }
-  ].sort((a, b) => b.r - a.r);
+  const rankedCorrelations = rankCorrelations(correlationData).map((c) => ({ ...c, target: "Overall Success" }));
 
   return (
     <div className="space-y-6">

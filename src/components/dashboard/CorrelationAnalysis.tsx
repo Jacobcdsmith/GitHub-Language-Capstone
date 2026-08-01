@@ -2,6 +2,7 @@ import type { languageData as staticLanguageData } from "@/data/analysisData";
 import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { TrendingUp, Activity, Heart, BarChart3 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { rankCorrelations } from "@/lib/correlations";
 
 type MetricType = 'activity' | 'health' | 'popularity';
 
@@ -138,11 +139,7 @@ export default function CorrelationAnalysis() {
     popularity: correlationData.popularityVsOverall
   };
 
-  const rankedCorrelations = [
-    { label: 'Activity', r: correlationData.activityVsOverall.r },
-    { label: 'Popularity', r: correlationData.popularityVsOverall.r },
-    { label: 'Health', r: correlationData.healthVsOverall.r }
-  ].sort((a, b) => b.r - a.r);
+  const rankedCorrelations = rankCorrelations(correlationData);
   const [strongestCorrelation, middleCorrelation, weakestCorrelation] = rankedCorrelations;
 
   const scatterState = useMemo(() => {
@@ -309,7 +306,8 @@ export default function CorrelationAnalysis() {
         ].map(({ metric, label, color }) => {
           const { r, rSquared } = correlationByMetric[metric];
           const rank = rankedCorrelations.findIndex((c) => c.r === r);
-          const rankLabel = rank === 0 ? "Strongest predictor of language success" : rank === rankedCorrelations.length - 1 ? "Weakest predictor among the three" : "Moderate positive correlation";
+          const { direction } = correlationDescriptor(r);
+          const rankLabel = rank === 0 ? "Strongest predictor of language success" : rank === rankedCorrelations.length - 1 ? "Weakest predictor among the three" : `Moderate ${direction.toLowerCase()} correlation`;
           return (
             <div key={metric} className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6">
               <div className="text-center mb-4">

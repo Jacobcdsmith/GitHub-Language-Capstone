@@ -21,7 +21,15 @@ export default function TrendChart({ languages }: TrendChartProps) {
     );
   }
 
-  if (error || !history || history.length < 2) {
+  if (error) {
+    return (
+      <div className="text-sm text-[var(--text-secondary)] py-10 text-center">
+        Trend history is unavailable right now.
+      </div>
+    );
+  }
+
+  if (!history || history.length < 2) {
     return (
       <div className="text-sm text-[var(--text-secondary)] py-10 text-center">
         Not enough history yet to plot a trend — this builds up automatically as the daily refresh runs.
