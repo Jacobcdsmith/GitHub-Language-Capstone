@@ -11,7 +11,7 @@ import {
   putRepoContent,
   getRepoFile,
   type SearchRepoItem
-} from "./lib/github";
+} from "./lib/github.js";
 import {
   maxScale,
   recencyScore,
@@ -24,7 +24,7 @@ import {
   isEnterpriseReady,
   growthSignal,
   pearsonCorrelation
-} from "./lib/scoring";
+} from "./lib/scoring.js";
 import type { LiveDataset, LiveRepoRecord, LiveLanguageSummary, LiveHealthIndicator, HistoryEntry } from "../src/types/liveDataset";
 
 // Must match the language names used in src/data/analysisData.ts.
