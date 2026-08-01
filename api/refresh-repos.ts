@@ -266,6 +266,18 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       healthVsOverall: buildCorrelation(
         allEnriched.map((r) => r.enriched!.healthScore),
         allEnriched.map((r) => r.enriched!.overallScore)
+      ),
+      activityVsHealth: buildCorrelation(
+        allEnriched.map((r) => r.enriched!.activityScore),
+        allEnriched.map((r) => r.enriched!.healthScore)
+      ),
+      activityVsPopularity: buildCorrelation(
+        allEnriched.map((r) => r.enriched!.activityScore),
+        allEnriched.map((r) => r.popularityScore)
+      ),
+      healthVsPopularity: buildCorrelation(
+        allEnriched.map((r) => r.enriched!.healthScore),
+        allEnriched.map((r) => r.popularityScore)
       )
     };
 

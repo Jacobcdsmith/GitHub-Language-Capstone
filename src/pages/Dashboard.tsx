@@ -8,7 +8,7 @@ import EnterpriseReadiness from "@/components/dashboard/EnterpriseReadiness";
 import RepositoryExplorer from "@/components/dashboard/RepositoryExplorer";
 import Visualizations3D from "@/components/dashboard/Visualizations3D";
 import HowToUse from "@/components/dashboard/HowToUse";
-import { AnalysisDataProvider, useAnalysisData } from "@/contexts/AnalysisDataContext";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
 const navigation = [
@@ -22,14 +22,6 @@ const navigation = [
 ];
 
 export default function Dashboard() {
-  return (
-    <AnalysisDataProvider>
-      <DashboardContent />
-    </AnalysisDataProvider>
-  );
-}
-
-function DashboardContent() {
   const [activeSection, setActiveSection] = useState("overview");
   const { isLive, generatedAt, totalRepoCount } = useAnalysisData();
 

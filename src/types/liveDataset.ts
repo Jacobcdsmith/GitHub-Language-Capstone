@@ -65,6 +65,9 @@ export interface LiveCorrelations {
   activityVsOverall: LiveScoreCorrelation;
   popularityVsOverall: LiveScoreCorrelation;
   healthVsOverall: LiveScoreCorrelation;
+  activityVsHealth: LiveScoreCorrelation;
+  activityVsPopularity: LiveScoreCorrelation;
+  healthVsPopularity: LiveScoreCorrelation;
 }
 
 export interface LiveHealthIndicator {

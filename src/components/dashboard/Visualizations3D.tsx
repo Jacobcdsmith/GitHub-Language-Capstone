@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, Info } from "lucide-react";
 
 const visualizations = [
   {
@@ -57,6 +57,13 @@ export default function Visualizations3D() {
         <p className="text-[#8b949e]">
           Explore multi-dimensional data with interactive 3D charts and advanced visualizations
         </p>
+        <div className="flex items-start gap-2 mt-3 text-xs text-[#8b949e] bg-[#0d1117] border border-[#21262d] rounded px-3 py-2 max-w-2xl">
+          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span>
+            These charts are pre-rendered from the notebook analysis snapshot, separate from the live data pipeline
+            powering the rest of this dashboard — they don't update automatically as live scores refresh.
+          </span>
+        </div>
       </div>
 
       {/* Visualization Selector */}
