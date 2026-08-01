@@ -278,6 +278,14 @@ export default function LanguageExplorer({ onSelectionChange }: LanguageExplorer
                   <div className="text-2xl font-bold text-[#ff6b6b] mb-1">{selected.growthSignal.toFixed(2)}</div>
                   <div className="text-xs text-[#8b949e]">Growth Signal</div>
                 </div>
+                <div className="bg-[#0d1117] p-4 rounded">
+                  <div className="text-2xl font-bold text-[#3fb950] mb-1">{selected.avgOpenPullRequests}</div>
+                  <div className="text-xs text-[#8b949e]">Avg Open PRs</div>
+                </div>
+                <div className="bg-[#0d1117] p-4 rounded">
+                  <div className="text-2xl font-bold text-[#58a6ff] mb-1">{selected.pctWithRecentRelease}%</div>
+                  <div className="text-xs text-[#8b949e]">Released in Last 6mo</div>
+                </div>
               </div>
             </div>
           ) : (

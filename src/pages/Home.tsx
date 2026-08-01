@@ -1,8 +1,17 @@
 import { Link } from "wouter";
-import { BarChart3, ArrowRight, TrendingUp, Code2, Shield, Boxes } from "lucide-react";
+import { BarChart3, ArrowRight, TrendingUp, Code2, Shield, Boxes, Radio } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
+import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import { rankCorrelations } from "@/lib/correlations";
 
 export default function Home() {
+  const { languageData, correlationData, healthIndicators, generatedAt, totalRepoCount } = useAnalysisData();
+  const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
+  const mostActiveLanguage = languageData.reduce((max, lang) => (lang.activityScore > max.activityScore ? lang : max), languageData[0]);
+  const topHealthIndicator = [...healthIndicators].sort((a, b) => b.impact - a.impact).slice(0, 2);
+  const [strongestCorrelation, , weakestCorrelation] = rankCorrelations(correlationData);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-surface)] to-[var(--bg-primary)]">
       <div className="container mx-auto px-6 py-16">
@@ -14,9 +23,13 @@ export default function Home() {
               GitHub Language Analytics
             </h1>
           </div>
-          <p className="text-2xl text-[var(--text-secondary)] mb-8 max-w-3xl mx-auto">
-            Comprehensive analysis of 1,200 repositories across 12 programming languages
+          <p className="text-2xl text-[var(--text-secondary)] mb-4 max-w-3xl mx-auto">
+            Comprehensive analysis of {totalRepoCount.toLocaleString()} repositories across {languageData.length} programming languages
           </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-[#3fb950] mb-8">
+            <Radio className="w-4 h-4" />
+            Live data &middot; refreshed {formatRelativeTime(generatedAt)}
+          </div>
           <Link href="/dashboard">
             <button className="inline-flex items-center gap-3 px-8 py-4 bg-[#58a6ff] hover:bg-[#4a9aef] text-white text-lg font-semibold rounded-lg transition-colors shadow-lg">
               <span>Explore Dashboard</span>
@@ -28,12 +41,12 @@ export default function Home() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-8 rounded-lg text-center">
-            <div className="text-5xl font-bold text-[#58a6ff] mb-3">1,200</div>
+            <div className="text-5xl font-bold text-[#58a6ff] mb-3">{totalRepoCount.toLocaleString()}</div>
             <div className="text-lg text-[var(--text-primary)] font-semibold mb-2">Repositories Analyzed</div>
             <div className="text-sm text-[var(--text-secondary)]">Comprehensive dataset coverage</div>
           </div>
           <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-8 rounded-lg text-center">
-            <div className="text-5xl font-bold text-[#3fb950] mb-3">12</div>
+            <div className="text-5xl font-bold text-[#3fb950] mb-3">{languageData.length}</div>
             <div className="text-lg text-[var(--text-primary)] font-semibold mb-2">Programming Languages</div>
             <div className="text-sm text-[var(--text-secondary)]">From Rust to Swift</div>
           </div>
@@ -138,28 +151,28 @@ export default function Home() {
         <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-8 rounded-lg mb-16">
           <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-6 text-center">Key Findings</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-[var(--bg-hover)] p-6 rounded-lg border-l-4 border-[#CE422B]">
-              <div className="text-2xl font-bold text-[#CE422B] mb-2">Rust Leads Overall</div>
+            <div className="bg-[var(--bg-hover)] p-6 rounded-lg border-l-4" style={{ borderColor: topLanguage.color }}>
+              <div className="text-2xl font-bold mb-2" style={{ color: topLanguage.color }}>{topLanguage.name} Leads Overall</div>
               <p className="text-[var(--text-primary)]">
-                Rust achieves the highest overall score (49.4) with balanced strength across all dimensions
+                {topLanguage.name} achieves the highest overall score ({topLanguage.overallScore.toFixed(1)}) with balanced strength across all dimensions
               </p>
             </div>
-            <div className="bg-[var(--bg-hover)] p-6 rounded-lg border-l-4 border-[#3178C6]">
-              <div className="text-2xl font-bold text-[#3178C6] mb-2">TypeScript Most Active</div>
+            <div className="bg-[var(--bg-hover)] p-6 rounded-lg border-l-4" style={{ borderColor: mostActiveLanguage.color }}>
+              <div className="text-2xl font-bold mb-2" style={{ color: mostActiveLanguage.color }}>{mostActiveLanguage.name} Most Active</div>
               <p className="text-[var(--text-primary)]">
-                TypeScript dominates activity metrics with 311 avg contributors and 69.4 activity score
+                {mostActiveLanguage.name} dominates activity metrics with {mostActiveLanguage.avgContributors} avg contributors and {mostActiveLanguage.activityScore.toFixed(1)} activity score
               </p>
             </div>
             <div className="bg-[var(--bg-hover)] p-6 rounded-lg border-l-4 border-[#3fb950]">
-              <div className="text-2xl font-bold text-[#3fb950] mb-2">Activity Predicts Success</div>
+              <div className="text-2xl font-bold text-[#3fb950] mb-2">{strongestCorrelation.label} Predicts Success</div>
               <p className="text-[var(--text-primary)]">
-                Activity metrics show strongest correlation (r=0.85) with overall success, outperforming popularity
+                {strongestCorrelation.label} metrics show the strongest correlation (r={strongestCorrelation.r}) with overall success, ahead of {weakestCorrelation.label.toLowerCase()} (r={weakestCorrelation.r})
               </p>
             </div>
             <div className="bg-[var(--bg-hover)] p-6 rounded-lg border-l-4 border-[#bc8cff]">
               <div className="text-2xl font-bold text-[#bc8cff] mb-2">Health Indicators Matter</div>
               <p className="text-[var(--text-primary)]">
-                License, contributing guidelines, and CoC each add 11-13 points to overall scores
+                {topHealthIndicator.map((h) => h.indicator).join(" and ")} are the strongest governance signals in overall scores
               </p>
             </div>
           </div>

@@ -131,6 +131,31 @@ export async function getCommitsCountSince(owner: string, repo: string, sinceDay
   return countViaLinkHeader(`${GITHUB_API}/repos/${owner}/${repo}/commits?since=${since}`);
 }
 
+/**
+ * Open pull request count, via the REST pulls endpoint (Link-header counting)
+ * rather than the Search API — the Search API has its own, much stricter
+ * 30 req/min secondary rate limit, and this pipeline already makes hundreds
+ * of per-repo core-API calls per refresh, which would blow through it.
+ */
+export async function getOpenPullRequestCount(owner: string, repo: string): Promise<number> {
+  return countViaLinkHeader(`${GITHUB_API}/repos/${owner}/${repo}/pulls?state=open`);
+}
+
+export interface ReleaseInfo {
+  hasReleases: boolean;
+  daysSinceLastRelease: number | null;
+}
+
+export async function getLatestReleaseInfo(owner: string, repo: string): Promise<ReleaseInfo> {
+  const res = await githubFetch(`${GITHUB_API}/repos/${owner}/${repo}/releases?per_page=5`);
+  if (!res.ok) return { hasReleases: false, daysSinceLastRelease: null };
+  const releases = (await res.json()) as Array<{ published_at: string | null }>;
+  const latest = Array.isArray(releases) ? releases.find((r) => r.published_at) : undefined;
+  if (!latest?.published_at) return { hasReleases: false, daysSinceLastRelease: null };
+  const days = Math.max(0, (Date.now() - new Date(latest.published_at).getTime()) / (24 * 60 * 60 * 1000));
+  return { hasReleases: true, daysSinceLastRelease: Math.round(days) };
+}
+
 /** Runs async tasks with bounded concurrency to stay well under GitHub's secondary rate limits. */
 export async function runWithConcurrency<T, R>(items: T[], concurrency: number, worker: (item: T, index: number) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length);
@@ -147,15 +172,17 @@ export async function runWithConcurrency<T, R>(items: T[], concurrency: number, 
   return results;
 }
 
-export async function getRepoContentSha(owner: string, repo: string, path: string, branch: string): Promise<string | undefined> {
+export async function getRepoFile(owner: string, repo: string, path: string, branch: string): Promise<{ content: string; sha: string } | undefined> {
   const res = await githubFetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
   if (!res.ok) return undefined;
-  const json = (await res.json()) as { sha?: string };
-  return json.sha;
+  const json = (await res.json()) as { content?: string; sha?: string };
+  if (!json.content || !json.sha) return undefined;
+  return { content: Buffer.from(json.content, "base64").toString("utf-8"), sha: json.sha };
 }
 
 export async function putRepoContent(owner: string, repo: string, path: string, branch: string, content: string, message: string): Promise<void> {
-  const sha = await getRepoContentSha(owner, repo, path, branch);
+  const existing = await getRepoFile(owner, repo, path, branch);
+  const sha = existing?.sha;
   const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${path}`, {
     method: "PUT",
     headers: { ...authHeaders(), "Content-Type": "application/json" },

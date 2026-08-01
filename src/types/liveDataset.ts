@@ -35,6 +35,9 @@ export interface LiveRepoRecord {
     hasCodeOfConduct: boolean;
     hasIssueTemplate: boolean;
     hasSecurity: boolean;
+    openPullRequests: number;
+    hasReleases: boolean;
+    daysSinceLastRelease: number | null;
   };
 }
 
@@ -48,6 +51,8 @@ export interface LiveLanguageSummary {
   avgForks: number;
   avgContributors: number;
   avgCommits365d: number;
+  avgOpenPullRequests: number;
+  pctWithRecentRelease: number;
   popularityScore: number;
   activityScore: number;
   healthScore: number;
@@ -65,6 +70,9 @@ export interface LiveCorrelations {
   activityVsOverall: LiveScoreCorrelation;
   popularityVsOverall: LiveScoreCorrelation;
   healthVsOverall: LiveScoreCorrelation;
+  activityVsHealth: LiveScoreCorrelation;
+  activityVsPopularity: LiveScoreCorrelation;
+  healthVsPopularity: LiveScoreCorrelation;
 }
 
 export interface LiveHealthIndicator {
@@ -85,3 +93,25 @@ export interface LiveDataset {
   correlations: LiveCorrelations;
   healthIndicators: LiveHealthIndicator[];
 }
+
+/**
+ * Wire format for public/history.json — a bounded rolling window of daily
+ * language-score snapshots, appended to (not overwritten) by each refresh so
+ * the dashboard can show trend lines. One entry per calendar day; a same-day
+ * re-run replaces that day's entry rather than duplicating it.
+ */
+export interface HistoryLanguageEntry {
+  language: string;
+  overallScore: number;
+  popularityScore: number;
+  activityScore: number;
+  healthScore: number;
+}
+
+export interface HistoryEntry {
+  date: string;
+  generatedAt: string;
+  languages: HistoryLanguageEntry[];
+}
+
+export type LiveHistory = HistoryEntry[];

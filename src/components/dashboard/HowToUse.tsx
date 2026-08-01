@@ -1,6 +1,14 @@
 import { BookOpen, BarChart3, TrendingUp, Shield, Info } from "lucide-react";
+import { useAnalysisData } from "@/contexts/AnalysisDataContext";
+import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import { rankCorrelations } from "@/lib/correlations";
 
 export default function HowToUse() {
+  const { languageData, correlationData, generatedAt, totalRepoCount } = useAnalysisData();
+  const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
+  const mostPopularLanguage = languageData.reduce((max, lang) => (lang.avgStars > max.avgStars ? lang : max), languageData[0]);
+  const rankedCorrelations = rankCorrelations(correlationData).map((c) => ({ ...c, target: "Overall Success" }));
+
   return (
     <div className="space-y-6">
       <div>
@@ -191,7 +199,7 @@ export default function HowToUse() {
               Color intensity indicates strength.
             </p>
             <div className="text-xs text-[#8b949e]">
-              Strong correlation (r=0.85): Activity ↔ Overall Success
+              Strongest correlation (r={rankedCorrelations[0].r}): {rankedCorrelations[0].label} ↔ {rankedCorrelations[0].target}
             </div>
           </div>
 
@@ -216,26 +224,24 @@ export default function HowToUse() {
         </div>
         <div className="space-y-3">
           <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#3fb950]">
-            <div className="font-semibold text-white mb-1">Activity → Success (r = 0.85)</div>
+            <div className="font-semibold text-white mb-1">{rankedCorrelations[0].label} → {rankedCorrelations[0].target} (r = {rankedCorrelations[0].r})</div>
             <p className="text-sm text-[#c9d1d9]">
-              Strong positive correlation indicates that active development (contributors, commits) 
-              is the best predictor of language success. More important than raw popularity.
+              The strongest correlation of the three tracked metrics — {rankedCorrelations[0].label.toLowerCase()} is currently
+              the best predictor of overall language success.
             </p>
           </div>
 
           <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#bc8cff]">
-            <div className="font-semibold text-white mb-1">Health → Enterprise Adoption</div>
+            <div className="font-semibold text-white mb-1">{rankedCorrelations[1].label} → {rankedCorrelations[1].target} (r = {rankedCorrelations[1].r})</div>
             <p className="text-sm text-[#c9d1d9]">
-              Languages with licenses, contributing guidelines, and codes of conduct score 11-13 points 
-              higher overall. Critical for enterprise decision-making.
+              A moderate correlation — meaningful, but a weaker predictor of overall score than the strongest metric above.
             </p>
           </div>
 
           <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#58a6ff]">
-            <div className="font-semibold text-white mb-1">Popularity vs. Activity (r = 0.62)</div>
+            <div className="font-semibold text-white mb-1">{rankedCorrelations[2].label} → {rankedCorrelations[2].target} (r = {rankedCorrelations[2].r})</div>
             <p className="text-sm text-[#c9d1d9]">
-              Moderate correlation shows that star count doesn't always reflect active development. 
-              Some popular languages have lower contributor engagement.
+              The weakest of the three tracked correlations, confirming it's not the most reliable success indicator on its own.
             </p>
           </div>
         </div>
@@ -246,26 +252,31 @@ export default function HowToUse() {
         <h3 className="text-2xl font-bold text-white mb-4">Frequently Asked Questions</h3>
         <div className="space-y-4">
           <div>
-            <h4 className="font-semibold text-white mb-1">Q: Why is Python's popularity score so high?</h4>
+            <h4 className="font-semibold text-white mb-1">Q: Why is {mostPopularLanguage.name}'s popularity score so high?</h4>
             <p className="text-sm text-[#c9d1d9]">
-              Python repositories average 5,200 stars, significantly higher than other languages. 
-              This reflects its dominant position in data science, ML, and education sectors.
+              {mostPopularLanguage.name} repositories average {mostPopularLanguage.avgStars.toLocaleString()} stars, the highest of any
+              tracked language right now. Popularity scores are normalized within each language's own sample, so this
+              reflects real, current adoption rather than a fixed baseline.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-1">Q: What makes Rust the overall leader?</h4>
+            <h4 className="font-semibold text-white mb-1">Q: What makes {topLanguage.name} the overall leader?</h4>
             <p className="text-sm text-[#c9d1d9]">
-              Rust achieves the highest overall score (49.4) through balanced excellence: strong popularity (48.8), 
-              high activity (50.0), and perfect health score (49.4). No major weaknesses.
+              {topLanguage.name} currently achieves the highest overall score ({topLanguage.overallScore.toFixed(1)}) through balanced
+              strength: popularity {topLanguage.popularityScore.toFixed(1)}, activity {topLanguage.activityScore.toFixed(1)}, and
+              health {topLanguage.healthScore.toFixed(1)}. No major weaknesses across the three dimensions.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold text-white mb-1">Q: How often is the data updated?</h4>
             <p className="text-sm text-[#c9d1d9]">
-              This analysis is based on a snapshot of 1,200 repositories across 12 languages. 
-              Data represents patterns as of the analysis date and may not reflect real-time changes.
+              This dashboard is live: a scheduled job refreshes scores for {totalRepoCount.toLocaleString()} repositories directly
+              from the GitHub API (last refreshed {formatRelativeTime(generatedAt)}). Popularity and recency are recomputed for every
+              fetched repo; activity/health/overall scores are computed for a representative top-scoring sample per language to stay
+              within API limits — see the language-level averages' methodology for details. There is no static fallback: if the live
+              pipeline can't be reached, the dashboard shows an explicit error instead of stale numbers.
             </p>
           </div>
 

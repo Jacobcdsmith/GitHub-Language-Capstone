@@ -2,8 +2,16 @@ import type { languageData as staticLanguageData } from "@/data/analysisData";
 import { useAnalysisData } from "@/contexts/AnalysisDataContext";
 import { TrendingUp, Activity, Heart, BarChart3 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { rankCorrelations } from "@/lib/correlations";
 
 type MetricType = 'activity' | 'health' | 'popularity';
+
+function correlationDescriptor(r: number): { strength: string; direction: string } {
+  const abs = Math.abs(r);
+  const strength = abs >= 0.7 ? "Strong" : abs >= 0.4 ? "Moderate" : "Weak";
+  const direction = r >= 0 ? "Positive" : "Negative";
+  return { strength, direction };
+}
 
 type Language = (typeof staticLanguageData)[number];
 
@@ -67,32 +75,41 @@ type HeatmapCell = {
   columnIndex: number;
 };
 
-const heatmapMatrix: Record<HeatmapMetricKey, Record<HeatmapMetricKey, number>> = {
-  activity: {
-    activity: 1.0,
-    health: 0.62,
-    popularity: 0.51,
-    overall: 0.85
-  },
-  health: {
-    activity: 0.62,
-    health: 1.0,
-    popularity: 0.45,
-    overall: 0.68
-  },
-  popularity: {
-    activity: 0.51,
-    health: 0.45,
-    popularity: 1.0,
-    overall: 0.57
-  },
-  overall: {
-    activity: 0.85,
-    health: 0.68,
-    popularity: 0.57,
-    overall: 1.0
-  }
-};
+function buildHeatmapMatrix(correlationData: {
+  activityVsOverall: { r: number };
+  popularityVsOverall: { r: number };
+  healthVsOverall: { r: number };
+  activityVsHealth: { r: number };
+  activityVsPopularity: { r: number };
+  healthVsPopularity: { r: number };
+}): Record<HeatmapMetricKey, Record<HeatmapMetricKey, number>> {
+  return {
+    activity: {
+      activity: 1.0,
+      health: correlationData.activityVsHealth.r,
+      popularity: correlationData.activityVsPopularity.r,
+      overall: correlationData.activityVsOverall.r
+    },
+    health: {
+      activity: correlationData.activityVsHealth.r,
+      health: 1.0,
+      popularity: correlationData.healthVsPopularity.r,
+      overall: correlationData.healthVsOverall.r
+    },
+    popularity: {
+      activity: correlationData.activityVsPopularity.r,
+      health: correlationData.healthVsPopularity.r,
+      popularity: 1.0,
+      overall: correlationData.popularityVsOverall.r
+    },
+    overall: {
+      activity: correlationData.activityVsOverall.r,
+      health: correlationData.healthVsOverall.r,
+      popularity: correlationData.popularityVsOverall.r,
+      overall: 1.0
+    }
+  };
+}
 
 const getStrengthLabel = (value: number) => {
   if (value >= 0.9) return "Practically perfect";
@@ -115,6 +132,15 @@ export default function CorrelationAnalysis() {
   const { languageData, correlationData } = useAnalysisData();
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('activity');
   const metricDetails = metricConfiguration[selectedMetric];
+
+  const correlationByMetric: Record<MetricType, { r: number; rSquared: number }> = {
+    activity: correlationData.activityVsOverall,
+    health: correlationData.healthVsOverall,
+    popularity: correlationData.popularityVsOverall
+  };
+
+  const rankedCorrelations = rankCorrelations(correlationData);
+  const [strongestCorrelation, middleCorrelation, weakestCorrelation] = rankedCorrelations;
 
   const scatterState = useMemo(() => {
     const { width, height, padding } = chartDimensions;
@@ -189,6 +215,7 @@ export default function CorrelationAnalysis() {
   }, [selectedMetric]);
 
   const heatmapState = useMemo(() => {
+    const heatmapMatrix = buildHeatmapMatrix(correlationData);
     const cellSize = 110;
     const headerSize = 96;
     const padding = 36;
@@ -224,7 +251,7 @@ export default function CorrelationAnalysis() {
         padding
       }
     };
-  }, []);
+  }, [correlationData]);
 
   const [selectedHeatmapCell, setSelectedHeatmapCell] = useState<HeatmapCell | null>(null);
 
@@ -272,38 +299,26 @@ export default function CorrelationAnalysis() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6">
-          <div className="text-center mb-4">
-            <div className="text-5xl font-bold text-[#3fb950] mb-2">0.85</div>
-            <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">Activity vs Overall</div>
-            <div className="text-xs text-[var(--text-secondary)]">R² = 0.72</div>
-          </div>
-          <div className="text-sm text-[var(--text-primary)] text-center">
-            Strongest predictor of language success
-          </div>
-        </div>
-
-        <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6">
-          <div className="text-center mb-4">
-            <div className="text-5xl font-bold text-[#bc8cff] mb-2">0.68</div>
-            <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">Health vs Overall</div>
-            <div className="text-xs text-[var(--text-secondary)]">R² = 0.46</div>
-          </div>
-          <div className="text-sm text-[var(--text-primary)] text-center">
-            Moderate positive correlation
-          </div>
-        </div>
-
-        <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6">
-          <div className="text-center mb-4">
-            <div className="text-5xl font-bold text-[#58a6ff] mb-2">0.57</div>
-            <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">Popularity vs Overall</div>
-            <div className="text-xs text-[var(--text-secondary)]">R² = 0.33</div>
-          </div>
-          <div className="text-sm text-[var(--text-primary)] text-center">
-            Weakest predictor among three
-          </div>
-        </div>
+        {[
+          { metric: 'activity' as MetricType, label: "Activity vs Overall", color: "#3fb950" },
+          { metric: 'health' as MetricType, label: "Health vs Overall", color: "#bc8cff" },
+          { metric: 'popularity' as MetricType, label: "Popularity vs Overall", color: "#58a6ff" }
+        ].map(({ metric, label, color }) => {
+          const { r, rSquared } = correlationByMetric[metric];
+          const rank = rankedCorrelations.findIndex((c) => c.r === r);
+          const { direction } = correlationDescriptor(r);
+          const rankLabel = rank === 0 ? "Strongest predictor of language success" : rank === rankedCorrelations.length - 1 ? "Weakest predictor among the three" : `Moderate ${direction.toLowerCase()} correlation`;
+          return (
+            <div key={metric} className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6">
+              <div className="text-center mb-4">
+                <div className="text-5xl font-bold mb-2" style={{ color }}>{r}</div>
+                <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">{label}</div>
+                <div className="text-xs text-[var(--text-secondary)]">R² = {rSquared}</div>
+              </div>
+              <div className="text-sm text-[var(--text-primary)] text-center">{rankLabel}</div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-lg p-6">
@@ -582,14 +597,10 @@ export default function CorrelationAnalysis() {
         <div className="mt-6 p-4 bg-[var(--bg-canvas)] rounded-lg border border-[var(--border-default)]">
           <div className="text-center">
             <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-              {selectedMetric === 'activity' && 'Strong Positive Correlation'}
-              {selectedMetric === 'health' && 'Moderate Positive Correlation'}
-              {selectedMetric === 'popularity' && 'Weak Positive Correlation'}
+              {correlationDescriptor(correlationByMetric[selectedMetric].r).strength} {correlationDescriptor(correlationByMetric[selectedMetric].r).direction} Correlation
             </div>
             <div className="text-xs text-[var(--text-secondary)]">
-              {selectedMetric === 'activity' && `Pearson r = ${correlationData.activityVsOverall.r} | R² = ${correlationData.activityVsOverall.rSquared} | p < 0.0001`}
-              {selectedMetric === 'health' && `Pearson r = ${correlationData.healthVsOverall.r} | R² = ${correlationData.healthVsOverall.rSquared} | p < 0.001`}
-              {selectedMetric === 'popularity' && `Pearson r = ${correlationData.popularityVsOverall.r} | R² = ${correlationData.popularityVsOverall.rSquared} | p < 0.01`}
+              Pearson r = {correlationByMetric[selectedMetric].r} | R² = {correlationByMetric[selectedMetric].rSquared}
             </div>
           </div>
         </div>
@@ -808,65 +819,53 @@ export default function CorrelationAnalysis() {
           <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">Key Findings</h3>
           <div className="space-y-3">
             <div className="bg-[var(--bg-canvas)] p-4 rounded border-l-4 border-[#3fb950]">
-              <div className="font-semibold text-[var(--text-primary)] mb-2">Activity is King</div>
+              <div className="font-semibold text-[var(--text-primary)] mb-2">{strongestCorrelation.label} Predicts Best</div>
               <div className="text-sm text-[var(--text-primary)]">
-                Activity metrics (commits, contributors) show strongest correlation (r=0.85) with overall success
+                {strongestCorrelation.label} metrics show the strongest correlation (r={strongestCorrelation.r}) with overall success
               </div>
             </div>
             <div className="bg-[var(--bg-canvas)] p-4 rounded border-l-4 border-[#58a6ff]">
-              <div className="font-semibold text-[var(--text-primary)] mb-2">Popularity Misleading</div>
+              <div className="font-semibold text-[var(--text-primary)] mb-2">{weakestCorrelation.label} Least Predictive</div>
               <div className="text-sm text-[var(--text-primary)]">
-                Raw popularity (stars) has weakest correlation (r=0.57), confirming it's not the best success indicator
+                {weakestCorrelation.label} has the weakest correlation (r={weakestCorrelation.r}) of the three, confirming it's not the best success indicator on its own
               </div>
             </div>
             <div className="bg-[var(--bg-canvas)] p-4 rounded border-l-4 border-[#bc8cff]">
-              <div className="font-semibold text-[var(--text-primary)] mb-2">Health Matters</div>
+              <div className="font-semibold text-[var(--text-primary)] mb-2">{middleCorrelation.label} Matters Too</div>
               <div className="text-sm text-[var(--text-primary)]">
-                Health indicators show moderate correlation (r=0.68), emphasizing importance of good project governance
+                {middleCorrelation.label} shows a moderate correlation (r={middleCorrelation.r}) with overall success
               </div>
             </div>
           </div>
         </div>
 
         <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6">
-          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">Statistical Significance</h3>
+          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">Correlation Strength</h3>
           <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[var(--text-primary)]">Activity Correlation</span>
-                <span className="text-sm font-mono text-[#3fb950]">p &lt; 0.0001</span>
-              </div>
-              <div className="text-xs text-[var(--text-secondary)] mb-2">Highly significant relationship</div>
-              <div className="w-full bg-[var(--border-default)] h-2 rounded-full overflow-hidden">
-                <div className="h-full bg-[#3fb950]" style={{ width: "85%" }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[var(--text-primary)]">Health Correlation</span>
-                <span className="text-sm font-mono text-[#bc8cff]">p &lt; 0.001</span>
-              </div>
-              <div className="text-xs text-[var(--text-secondary)] mb-2">Significant relationship</div>
-              <div className="w-full bg-[var(--border-default)] h-2 rounded-full overflow-hidden">
-                <div className="h-full bg-[#bc8cff]" style={{ width: "68%" }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[var(--text-primary)]">Popularity Correlation</span>
-                <span className="text-sm font-mono text-[#58a6ff]">p &lt; 0.01</span>
-              </div>
-              <div className="text-xs text-[var(--text-secondary)] mb-2">Moderate significance</div>
-              <div className="w-full bg-[var(--border-default)] h-2 rounded-full overflow-hidden">
-                <div className="h-full bg-[#58a6ff]" style={{ width: "57%" }} />
-              </div>
-            </div>
+            {[
+              { label: "Activity Correlation", r: correlationData.activityVsOverall.r, color: "#3fb950" },
+              { label: "Health Correlation", r: correlationData.healthVsOverall.r, color: "#bc8cff" },
+              { label: "Popularity Correlation", r: correlationData.popularityVsOverall.r, color: "#58a6ff" }
+            ].map(({ label, r, color }) => {
+              const { strength, direction } = correlationDescriptor(r);
+              return (
+                <div key={label}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">{label}</span>
+                    <span className="text-sm font-mono" style={{ color }}>r = {r}</span>
+                  </div>
+                  <div className="text-xs text-[var(--text-secondary)] mb-2">{strength} {direction.toLowerCase()} relationship</div>
+                  <div className="w-full bg-[var(--border-default)] h-2 rounded-full overflow-hidden">
+                    <div className="h-full" style={{ width: `${Math.abs(r) * 100}%`, backgroundColor: color }} />
+                  </div>
+                </div>
+              );
+            })}
 
             <div className="mt-6 p-4 bg-[var(--bg-canvas)] rounded">
               <div className="text-sm text-[var(--text-primary)]">
-                All correlations are statistically significant, validating ecosystem-level variations beyond individual project quality
+                {strongestCorrelation.label} has the strongest relationship with overall success (r = {strongestCorrelation.r}), suggesting
+                ecosystem-level variation beyond individual project quality.
               </div>
             </div>
           </div>

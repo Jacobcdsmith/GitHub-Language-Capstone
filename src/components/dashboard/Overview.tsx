@@ -1,13 +1,21 @@
 import { useState, useEffect } from "react";
 import { useAnalysisData } from "@/contexts/AnalysisDataContext";
-import { TrendingUp, Award, Activity, Sparkles } from "lucide-react";
+import { TrendingUp, Award, Activity, Sparkles, LineChart } from "lucide-react";
 import DynamicInsights from "./DynamicInsights";
+import TrendChart from "./TrendChart";
+import { rankCorrelations } from "@/lib/correlations";
 
 export default function Overview() {
-  const { languageData, correlationData, segmentData } = useAnalysisData();
+  const { languageData, correlationData, segmentData, healthIndicators } = useAnalysisData();
   const topLanguages = languageData.slice(0, 5);
   const topLanguage = languageData.reduce((max, lang) => (lang.overallScore > max.overallScore ? lang : max), languageData[0]);
   const mostActiveLanguage = languageData.reduce((max, lang) => (lang.activityScore > max.activityScore ? lang : max), languageData[0]);
+  const top3Languages = languageData.slice(0, 3);
+  const remainingLanguages = languageData.slice(3);
+  const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
+  const top3ScoreGap = Math.max(0, mean(top3Languages.map((l) => l.overallScore)) - mean(remainingLanguages.map((l) => l.overallScore)));
+  const topHealthIndicator = [...healthIndicators].sort((a, b) => b.impact - a.impact).slice(0, 2);
+  const [strongestCorrelation, , weakestCorrelation] = rankCorrelations(correlationData);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
   const [animatedScores, setAnimatedScores] = useState<Record<string, number>>({});
 
@@ -67,16 +75,25 @@ export default function Overview() {
             </div>
             <h3 className="text-lg font-semibold text-white">Strongest Predictor</h3>
           </div>
-          <div className="text-4xl font-bold text-[#3fb950] mb-2">Activity</div>
-          <div className="text-sm text-[#8b949e]">Correlation: r = {correlationData.activityVsOverall.r}</div>
+          <div className="text-4xl font-bold text-[#3fb950] mb-2">{strongestCorrelation.label}</div>
+          <div className="text-sm text-[#8b949e]">Correlation: r = {strongestCorrelation.r}</div>
           <div className="mt-4 text-sm text-[#c9d1d9]">
-            Better predictor than popularity (r = {correlationData.popularityVsOverall.r})
+            Better predictor than {weakestCorrelation.label.toLowerCase()} (r = {weakestCorrelation.r})
           </div>
         </div>
       </div>
 
       {/* Dynamic Insights */}
       <DynamicInsights />
+
+      {/* Historical Trend */}
+      <div className="bg-[#161b22] border border-[#21262d] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <LineChart className="w-5 h-5 text-[#58a6ff]" />
+          <h3 className="text-xl font-bold text-white">Overall Score Trend</h3>
+        </div>
+        <TrendChart languages={topLanguages.map((l) => ({ name: l.name, color: l.color }))} />
+      </div>
 
       {/* Top 5 Languages Ranking */}
       <div className="bg-[#161b22] border border-[#21262d] p-6">
@@ -151,21 +168,21 @@ export default function Overview() {
           <h3 className="text-xl font-bold text-white mb-4">Key Insights</h3>
           <div className="space-y-4">
             <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#3fb950]">
-              <div className="font-semibold text-white mb-2">Modern Languages Dominate</div>
+              <div className="font-semibold text-white mb-2">Top Languages Lead the Pack</div>
               <div className="text-sm text-[#c9d1d9]">
-                Rust, TypeScript, and Go outperform traditional languages by 10-15 points with balanced strength across all dimensions
+                {top3Languages.map((l) => l.name).join(", ")} outperform the rest by {top3ScoreGap.toFixed(1)} points on average, with balanced strength across all dimensions
               </div>
             </div>
             <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#58a6ff]">
-              <div className="font-semibold text-white mb-2">Activity Predicts Success</div>
+              <div className="font-semibold text-white mb-2">{strongestCorrelation.label} Predicts Success</div>
               <div className="text-sm text-[#c9d1d9]">
-                Activity metrics (r=0.85) demonstrate stronger correlation with success than popularity (r=0.57)
+                {strongestCorrelation.label} metrics (r={strongestCorrelation.r}) demonstrate stronger correlation with success than {weakestCorrelation.label.toLowerCase()} (r={weakestCorrelation.r})
               </div>
             </div>
             <div className="bg-[#0d1117] p-4 rounded border-l-4 border-[#bc8cff]">
               <div className="font-semibold text-white mb-2">Health Indicators Matter</div>
               <div className="text-sm text-[#c9d1d9]">
-                License, contributing guidelines, and CoC each add 11-13 points to overall scores
+                {topHealthIndicator.map((h) => h.indicator).join(" and ")} are the strongest governance signals in overall scores
               </div>
             </div>
           </div>

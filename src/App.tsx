@@ -5,14 +5,24 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AnalysisDataProvider } from "./contexts/AnalysisDataContext";
+import LiveDataGate from "./components/LiveDataGate";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/"}>
+        <LiveDataGate>
+          <Home />
+        </LiveDataGate>
+      </Route>
+      <Route path={"/dashboard"}>
+        <LiveDataGate>
+          <Dashboard />
+        </LiveDataGate>
+      </Route>
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -34,7 +44,9 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <AnalysisDataProvider>
+            <Router />
+          </AnalysisDataProvider>
           <Analytics />
         </TooltipProvider>
       </ThemeProvider>

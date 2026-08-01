@@ -1,8 +1,15 @@
-import type { LiveDataset } from "@/types/liveDataset";
-import { languageData as staticLanguageData, topRepositories as staticTopRepositories, correlationData as staticCorrelationData, segmentData as staticSegmentData, healthIndicators as staticHealthIndicators } from "@/data/analysisData";
+import type { LiveDataset, LiveCorrelations } from "@/types/liveDataset";
+import { languageData as staticLanguageData, topRepositories as staticTopRepositories, segmentData as staticSegmentData, healthIndicators as staticHealthIndicators } from "@/data/analysisData";
 
-type LanguageData = typeof staticLanguageData[number];
-type Repository = (typeof staticTopRepositories)[number];
+type LanguageData = typeof staticLanguageData[number] & {
+  avgOpenPullRequests: number;
+  pctWithRecentRelease: number;
+};
+type Repository = (typeof staticTopRepositories)[number] & {
+  openPullRequests: number;
+  hasReleases: boolean;
+  daysSinceLastRelease: number | null;
+};
 type Segment = (typeof staticSegmentData)[number];
 type HealthIndicator = (typeof staticHealthIndicators)[number];
 
@@ -19,7 +26,7 @@ const SEGMENT_DEFINITIONS: { segment: string; languages: string[] }[] = staticSe
 export interface TransformedAnalysisData {
   languageData: LanguageData[];
   topRepositories: Repository[];
-  correlationData: typeof staticCorrelationData;
+  correlationData: LiveCorrelations;
   segmentData: Segment[];
   healthIndicators: HealthIndicator[];
 }
@@ -39,6 +46,8 @@ export function transformLiveDataset(dataset: LiveDataset): TransformedAnalysisD
         avgForks: l.avgForks,
         avgContributors: l.avgContributors,
         avgCommits: l.avgCommits365d,
+        avgOpenPullRequests: l.avgOpenPullRequests,
+        pctWithRecentRelease: l.pctWithRecentRelease,
         enterpriseReadiness: Math.round(l.enterpriseReadyPct),
         growthSignal: l.growthSignal,
         color: meta.color,
@@ -54,7 +63,10 @@ export function transformLiveDataset(dataset: LiveDataset): TransformedAnalysisD
       stars: r.stars,
       forks: r.forks,
       contributors: r.enriched.contributorsCount,
-      growth: r.enriched.growthSignal
+      growth: r.enriched.growthSignal,
+      openPullRequests: r.enriched.openPullRequests,
+      hasReleases: r.enriched.hasReleases,
+      daysSinceLastRelease: r.enriched.daysSinceLastRelease
     }));
 
   const segmentData: Segment[] = SEGMENT_DEFINITIONS.map(({ segment, languages }) => {
