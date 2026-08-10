@@ -628,5 +628,95 @@
         "healthScore": 59.2
       }
     ]
+  },
+  {
+    "date": "2026-08-10",
+    "generatedAt": "2026-08-10T07:00:23.019Z",
+    "languages": [
+      {
+        "language": "Rust",
+        "overallScore": 43.43,
+        "popularityScore": 18.04,
+        "activityScore": 36.87,
+        "healthScore": 68
+      },
+      {
+        "language": "TypeScript",
+        "overallScore": 45.28,
+        "popularityScore": 17.95,
+        "activityScore": 37.51,
+        "healthScore": 73.6
+      },
+      {
+        "language": "Go",
+        "overallScore": 46.91,
+        "popularityScore": 22.95,
+        "activityScore": 39.73,
+        "healthScore": 68.8
+      },
+      {
+        "language": "C++",
+        "overallScore": 44.45,
+        "popularityScore": 16.93,
+        "activityScore": 38.48,
+        "healthScore": 71.2
+      },
+      {
+        "language": "Python",
+        "overallScore": 45.31,
+        "popularityScore": 23.48,
+        "activityScore": 37.63,
+        "healthScore": 60.8
+      },
+      {
+        "language": "JavaScript",
+        "overallScore": 49.21,
+        "popularityScore": 24.75,
+        "activityScore": 38.89,
+        "healthScore": 69.6
+      },
+      {
+        "language": "Ruby",
+        "overallScore": 48.59,
+        "popularityScore": 22.09,
+        "activityScore": 31.9,
+        "healthScore": 71.2
+      },
+      {
+        "language": "Java",
+        "overallScore": 45.12,
+        "popularityScore": 24.9,
+        "activityScore": 35.02,
+        "healthScore": 63.2
+      },
+      {
+        "language": "Kotlin",
+        "overallScore": 43.26,
+        "popularityScore": 23.3,
+        "activityScore": 30.69,
+        "healthScore": 53.6
+      },
+      {
+        "language": "PHP",
+        "overallScore": 41.78,
+        "popularityScore": 19.13,
+        "activityScore": 35.57,
+        "healthScore": 63.2
+      },
+      {
+        "language": "Swift",
+        "overallScore": 41.42,
+        "popularityScore": 16.85,
+        "activityScore": 30.75,
+        "healthScore": 69.6
+      },
+      {
+        "language": "C#",
+        "overallScore": 37.77,
+        "popularityScore": 14.26,
+        "activityScore": 37.05,
+        "healthScore": 59.2
+      }
+    ]
   }
 ]
